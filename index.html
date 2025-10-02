@@ -62,7 +62,7 @@
             padding: 0 2rem;
         }
 
-        header h1 {
+        .header-container h1 {
             font-size: 2rem;
             color: var(--primary-color);
             text-align: center;
@@ -431,6 +431,98 @@
         .modal-button#copy-full:hover {
             background-color: #2980b9;
             border-color: #2980b9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 7rem 1rem 1rem 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .violations-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 1rem;
+            }
+
+            .violation-card {
+                padding: 1rem;
+            }
+
+            .card-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .summary-content {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+
+            .summary-bar {
+                padding: 0.5rem 1rem;
+            }
+
+            .summary-item {
+                margin: 0;
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .summary-item h4 {
+                font-size: 0.9rem;
+                margin-bottom: 0;
+            }
+
+            .summary-item p {
+                font-size: 1.2rem;
+            }
+
+            .fab-container {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .header-container h1 {
+                font-size: 1.5rem;
+            }
+
+            .search-bar input {
+                padding: 0.8rem 0.8rem 0.8rem 3rem;
+                font-size: 1rem;
+            }
+
+            .search-bar .fa-search {
+                left: 1rem;
+            }
+
+            .violations-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .notification-box {
+                width: 90%;
+                right: 5%;
+                top: 1rem;
+            }
         }
 
     </style>
