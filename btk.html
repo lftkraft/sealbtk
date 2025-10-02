@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SealMTA Btk.</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #1c1f22;
+            --card-background: #282c34;
+            --text-color: #ecf0f1;
+            --text-muted: #95a5a6;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --font-family: 'Roboto', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 8rem 2rem 2rem 2rem;
+        }
+
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(28, 31, 34, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: 1rem 0;
+            transition: transform 0.4s ease-in-out;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header-container.hidden {
+            transform: translateY(-100%);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3.5rem;
+            background-color: var(--card-background);
+            border: 1px solid var(--secondary-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-bar .fa-search {
+            position: absolute;
+            top: 50%;
+            left: 1.2rem;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .violations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .violation-card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 5px solid var(--secondary-color);
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .violation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-left-color: var(--primary-color);
+        }
+        
+        .violation-card.selected {
+            border-left-color: var(--success-color);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-header h3 {
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            margin-right: 1rem;
+        }
+        
+        .card-header .ids {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .card-header .para {
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .card-header .abbreviation {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: var(--text-muted);
+        }
+
+        .card-content p {
+            margin-bottom: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .card-content p strong {
+            color: var(--text-color);
+            min-width: 100px;
+            display: inline-block;
+        }
+        
+        .card-content .description {
+            font-style: italic;
+            border-left: 2px solid var(--secondary-color);
+            padding-left: 10px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .summary-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--secondary-color);
+            padding: 1.5rem;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .summary-bar.visible {
+            transform: translateY(0);
+        }
+
+        .summary-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .summary-item {
+            text-align: center;
+            margin: 0.5rem 1rem;
+        }
+
+        .summary-item h4 {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-item p {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        #total-fine { color: var(--success-color); }
+        #total-jail { color: var(--error-color); }
+        #count { color: var(--primary-color); }
+
+        .notification-box {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            border-left: 5px solid var(--primary-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 200;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease-in-out;
+        }
+
+        .notification-box.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification-box.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .category-title {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .fab-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 110;
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        .fab-container.visible {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .fab {
+            background-color: var(--primary-color);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .fab i {
+            transition: transform 0.3s ease;
+        }
+
+        .fab-container.active .fab {
+            transform: rotate(45deg);
+            background-color: var(--error-color);
+        }
+
+        .fab-actions {
+            position: absolute;
+            bottom: 70px;
+            right: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fab-action {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .fab-container.active .fab-action {
+            transform: scale(1);
+        }
+        
+        .fab-container.active .fab-action:nth-child(1) { transition-delay: 0.3s; }
+        .fab-container.active .fab-action:nth-child(2) { transition-delay: 0.2s; }
+        .fab-container.active .fab-action:nth-child(3) { transition-delay: 0.1s; }
+        .fab-container.active .fab-action:nth-child(4) { transition-delay: 0s; }
+
+        .hidden-by-filter {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header-container" id="header-container">
+        <div class="header-content">
+            <h1><i class="fas fa-gavel"></i> SealMTA Büntető Törvénykönyv</h1>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Keresés a tételek között (név, §, rövidítés)...">
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
+        <div id="violations-container"></div>
+    </div>
+
+    <div class="summary-bar" id="summary-bar">
+        <div class="summary-content">
+            <div class="summary-item">
+                <h4><i class="fas fa-list-ol"></i> Kiválasztott tételek</h4>
+                <p id="count">0</p>
+            </div>
+            <div class="summary-item">
+                <h4><i class="fas fa-dollar-sign"></i> Bírság (Min-Max)</h4>
+                <p id="total-fine">$0 - $0</p>
+            </div>
+            <div class="summary-item">
+                <h4><i class="fas fa-user-clock"></i> Letöltendő (Min-Max)</h4>
+                <p id="total-jail">0p - 0p</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification-box"></div>
+
+    <div class="fab-container" id="fab-container">
+        <div class="fab-actions">
+            <button class="fab-action" id="copy-summary" title="Összegzés másolása"><i class="fas fa-clipboard-check"></i></button>
+            <button class="fab-action" id="copy-jail" title="Börtönidő másolása"><i class="fas fa-user-clock"></i></button>
+            <button class="fab-action" id="copy-fine" title="Bírság másolása"><i class="fas fa-dollar-sign"></i></button>
+            <button class="fab-action" id="copy-names" title="Tételek másolása"><i class="fas fa-list-alt"></i></button>
+        </div>
+        <button class="fab" id="fab-main"><i class="fas fa-plus"></i></button>
+    </div>
+
+    <script>
+    const violationsData = [
+        {"category": "Közlekedési szabálysértések", "id": "1", "name": "Forgalom feltartása", "fine": [8400, 18200], "jail": [0, 0], "description": "Forgalom Feltartásának minősül minden olyan cselekedet mely az úttest valamely forgalmi sávjában történő egyenletes haladást, vagy előzést indokolatlanul hátráltatja vagy megakadályozza.", "abbreviation": "FF"},
+        {"category": "Közlekedési szabálysértések", "id": "2", "name": "Gondatlan vezetés", "fine": [10800, 15600], "jail": [0, 0], "description": "Aki a közúti közlekedés szabályainak megszegésével közúton vagy közforgalom elől el nem zárt magánúton más vagy mások életét vagy testi épségét veszélynek tenné ki, viszont az adott helyzetben ez a forgalom sűrűsége vagy bármilyen egyéb ok miatt nem áll fent. Nem osztható együtt a 'Közúti veszélyeztetés' tétellel.", "abbreviation": "GV"},
+        {"category": "Közlekedési szabálysértések", "id": "3", "name": "Jogosítvány nélküli vezetés", "fine": [18000, 29900], "jail": [0, 0], "description": "Aki járművet vezetői engedély nélkül vagy lejárt vezetői engedéllyel közúti forgalomban használ. Szintén büntetendő amennyiben a jármű vezetője rendelkezik érvényes engedéllyel azonban azt nem tudja bemutatni ellenőrzéskor.", "abbreviation": "JNV"},
+        {"category": "Közlekedési szabálysértések", "id": "4", "name": "Állami szervezet tulajdonának megrongálása", "fine": [14400, 31200], "jail": [0, 0], "description": "Az a személy aki szándékosan vagy gondatlanságból állami tulajdont rongál meg.", "abbreviation": "ÁSZTM"},
+        {"category": "Közlekedési szabálysértések", "id": "5", "name": "Bukósisak nélküli motor vezetés", "fine": [10800, 11700], "jail": [0, 0], "description": "-", "abbreviation": "BNMV"},
+        {"category": "Közlekedési szabálysértések", "id": "6", "name": "Jobbratartási kötelezettség megszegése", "fine": [6000, 11700], "jail": [0, 0], "description": "-", "abbreviation": "JKM"},
+        {"category": "Közlekedési szabálysértések", "id": "7", "name": "Kanyarodási szabályok megszegése", "fine": [6000, 11700], "jail": [0, 0], "description": "-", "abbreviation": "KSZM"},
+        {"category": "Közlekedési szabálysértések", "id": "8", "name": "Fényszóró használatának elmulasztása", "fine": [3840, 6240], "jail": [0, 0], "description": "Fényszóró használata este 6 és reggel 6 óra valamint rossz látási viszonyok között kötelező.", "abbreviation": "FHE"},
+        {"category": "Közlekedési szabálysértések", "id": "9", "name": "Kanyarodási szándék jelzésének elmulasztása", "fine": [2880, 6240], "jail": [0, 0], "description": "-", "abbreviation": "KSZJE"},
+        {"category": "Közlekedési szabálysértések", "id": "10", "name": "Körforgalmú útrend megsértése", "fine": [4800, 9100], "jail": [0, 0], "description": "-", "abbreviation": "KUM"},
+        {"category": "Közlekedési szabálysértések", "id": "11", "name": "Biztonsági öv becsatolásának elmulasztása", "fine": [3600, 6500], "jail": [0, 0], "description": "-", "abbreviation": "BÖE"},
+        {"category": "Közlekedési szabálysértések", "id": "12", "name": "Mobiltelefon használata vezetés közben", "fine": [24000, 39000], "jail": [0, 0], "description": "-", "abbreviation": "MHV"},
+        {"category": "Közlekedési szabálysértések", "id": "13", "name": "Autópálya leállósávján történő haladás", "fine": [12000, 23400], "jail": [0, 0], "description": "Nem büntetendő amennyiben műszaki hibás járművel az első lehajtóig / kijáratig csökkentett sebességgel halad.", "abbreviation": "ALTH"},
+        {"category": "Közlekedési szabálysértések", "id": "14.1", "name": "Gondatlan vezetés - Közúti jelzőlámpa esetében", "fine": [18000, 26000], "jail": [0, 0], "description": "-", "abbreviation": "TJVÁ"},
+        {"category": "Közlekedési szabálysértések", "id": "14.2", "name": "Gondatlan vezetés - Vasúti átjáró esetében", "fine": [20400, 26000], "jail": [0, 0], "description": "-", "abbreviation": "VTJVÁ"},
+        {"category": "Közlekedési szabálysértések", "id": "15", "name": "Behajtási tilalom megsértése", "fine": [7200, 10400], "jail": [0, 0], "description": "-", "abbreviation": "BTM"},
+        {"category": "Közlekedési szabálysértések", "id": "16", "name": "Kötelező haladási irány megsértése", "fine": [10800, 15600], "jail": [0, 0], "description": "-", "abbreviation": "KHIM"},
+        {"category": "Közlekedési szabálysértések", "id": "17", "name": "Elsőbbségadás elmulasztása", "fine": [6000, 10400], "jail": [0, 0], "description": "Nem osztható együtt a 'STOP Tábla elmulasztása' tétellel.", "abbreviation": "ESH"},
+        {"category": "Közlekedési szabálysértések", "id": "18", "name": "STOP Tábla figyelmen kívül hagyása", "fine": [8400, 15600], "jail": [0, 0], "description": "Nem osztható együtt az 'Elsőbbségadás elmulasztása' tétellel.", "abbreviation": "STFK"},
+        {"category": "Közlekedési szabálysértések", "id": "19", "name": "Előzés szabályainak megsértése", "fine": [6000, 9100], "jail": [0, 0], "description": "-", "abbreviation": "ESM"},
+        {"category": "Közlekedési szabálysértések", "id": "20", "name": "Tilosban parkolás", "fine": [16800, 33800], "jail": [0, 0], "description": "Részletes leírás a szabályzatban.", "abbreviation": "TP"},
+        {"category": "Közlekedési szabálysértések", "id": "21", "name": "Parkolási rendelet megsértése", "fine": [21600, 23400], "jail": [0, 0], "description": "Aki a Parkolási Szabályzatban foglaltakat megsérti.", "abbreviation": "TPRM"},
+        {"category": "Közlekedési szabálysértések", "id": "22", "name": "Kötelező felszerelés hiánya", "fine": [6000, 6500], "jail": [0, 0], "description": "Elsősegély doboz, Kötszer, Téli gumi (ha indokolt).", "abbreviation": "KFH"},
+        {"category": "Közlekedési szabálysértések", "id": "23", "name": "Forgalmi engedély hiánya", "fine": [24000, 26000], "jail": [0, 0], "description": "A gépjármű nem rendelkezik érvényes forgalmi engedéllyel.", "abbreviation": "FEH"},
+        {"category": "Közlekedési szabálysértések", "id": "24", "name": "Lejárt forgalmi engedély", "fine": [18000, 19500], "jail": [0, 0], "description": "A gépjármű forgalmi engedélyének érvényességi ideje lejárt.", "abbreviation": "LFEH"},
+        {"category": "Közlekedési szabálysértések", "id": "25", "name": "Érvénytelen forgalmi engedély", "fine": [15600, 16900], "jail": [0, 0], "description": "A forgalmi engedélyben leírt adatok nem aktuálisak.", "abbreviation": "ÉFEH"},
+        {"category": "Közlekedési szabálysértések", "id": "26", "name": "Rongált járművel való közlekedés", "fine": [6000, 7150], "jail": [0, 0], "description": "Sérült karosszéria elemekkel való közlekedés. Elemenként +1000$.", "abbreviation": "RJVK"},
+        {"category": "Közlekedési szabálysértések", "id": "27", "name": "Nem megfelelő műszaki állapotú jármű használata", "fine": [12000, 16250], "jail": [0, 0], "description": "A jármű műszaki vizsgán nem felelne meg.", "abbreviation": "NMJVK"},
+        {"category": "Közlekedési szabálysértések", "id": "28", "name": "KRESZ Szabálypont megsértése", "fine": [10800, 16900], "jail": [0, 0], "description": "Minden egyéb, a törvényben nem részletezett KPM-BM rendelet szerinti szabály.", "abbreviation": "KSZTM"},
+        {"category": "Közlekedési szabálysértések", "id": "29.1", "name": "Járműre szerelt illegális alkatrész - Színes fényszóró", "fine": [15600, 32500], "jail": [0, 0], "description": "Nem engedélyezett fényszóró használata.", "abbreviation": "IAGSZF"},
+        {"category": "Közlekedési szabálysértések", "id": "29.2", "name": "Járműre szerelt illegális alkatrész - Neon", "fine": [19200, 33800], "jail": [0, 0], "description": "Neoncső használata közúton.", "abbreviation": "IAGSZN"},
+        {"category": "Közlekedési szabálysértések", "id": "29.3", "name": "Járműre szerelt illegális alkatrész - Nitro", "fine": [18000, 35100], "jail": [0, 0], "description": "StayRingen belül használható.", "abbreviation": "IAGSZO"},
+        {"category": "Szabálysértések", "id": "36", "name": "Személyazonosító igazolvány hiánya", "fine": [6000, 9100], "jail": [0, 0], "description": "-", "abbreviation": "SZIH"},
+        {"category": "Szabálysértések", "id": "37", "name": "Csendháborítás", "fine": [14400, 31200], "jail": [0, 0], "description": "Lakossági panasz esetén este 22 óra és reggel 8 óra között.", "abbreviation": "CSB"},
+        {"category": "Szabálysértések", "id": "38", "name": "Közrend megzavarása", "fine": [8400, 10400], "jail": [0, 0], "description": "Aki közterületen az alapvető viselkedési normákat nem tartja be, vagy koldul. Nem osztható együtt a 'Garázdaság' tétellel.", "abbreviation": "KMR"},
+        {"category": "Szabálysértések", "id": "39", "name": "Közterületen történő alkoholfogyasztás", "fine": [6000, 9100], "jail": [0, 0], "description": "Aki közterületen alkoholos italt fogyaszt.", "abbreviation": "KTA"},
+        {"category": "Szabálysértések", "id": "40", "name": "Dohányzás tiltott területen", "fine": [5400, 9100], "jail": [0, 0], "description": "Tilos a dohányzás minden közintézményben valamint azok területén, buszmegállóban továbbá ahol tilalmat jelző tábla került kihelyezésre", "abbreviation": "DTT"},
+        {"category": "Szabálysértések", "id": "41", "name": "Rendőrrel szembeni tiszteletlenség", "fine": [4800, 11700], "jail": [0, 0], "description": "Aki rendőrt, katonát egyéb hivatali személyt sérteget.", "abbreviation": "RSZT"},
+        {"category": "Szabálysértések", "id": "42", "name": "Közvagyon megrongálása", "fine": [3000, 3250], "jail": [0, 0], "description": "Aki oszlopot, póznát, buszmegállót rongál meg. Minden más tárgy esetében a 'Rongálás' tételt kell alkalmazni.", "abbreviation": "KM"},
+        {"category": "Szabálysértések", "id": "43", "name": "Engedély Nélküli Horgászat", "fine": [40000, 40000], "jail": [0, 0], "description": "-", "abbreviation": "ENH"},
+        {"category": "Szabálysértések", "id": "44", "name": "Engedély Nélküli Rákhalászat", "fine": [0, 0], "jail": [0, 0], "description": "Jelenleg nem osztható", "abbreviation": "ENR"},
+        {"category": "Szabálysértések", "id": "45.1", "name": "Diszkrimináció - Magánszemélyként", "fine": [14400, 15600], "jail": [0, 0], "description": "Aki mást faji, vallási, szexuális, vagy bármilyen más hovatartozása miatt hátrányosan kezel.", "abbreviation": "DKM"},
+        {"category": "Szabálysértések", "id": "45.2", "name": "Diszkrimináció - Cégként", "fine": [30000, 32500], "jail": [0, 0], "description": "Aki mást faji, vallási, szexuális, vagy bármilyen más hovatartozása miatt hátrányosan kezel.", "abbreviation": "DKC"},
+        {"category": "Szabálysértések", "id": "46", "name": "Állami szerv indokolatlan hívása", "fine": [12000, 19500], "jail": [0, 0], "description": "Aki állami szervezetet indokolatlanul hív ki egy helyszínre, vagy aki az indokolatlanná válást követően hívását nem mondja le.", "abbreviation": "ÁSZIH"},
+        {"category": "Szabálysértések", "id": "47", "name": "Megengedettnél több fegyver tartása", "fine": [30000, 32500], "jail": [0, 0], "description": "Aki fegyvereit engedéllyel és azokat bejelentve tartja, azonban egy adott típusból (lőfegyver/kézifegyver) 1 darabnál több van nála egy időben.", "abbreviation": "MTF"},
+        {"category": "Szabálysértések", "id": "48", "name": "Megengedettnél több töltény tartása", "fine": [24000, 26000], "jail": [0, 0], "description": "Aki a fegyveréhez tartozó töltényt engedéllyel tartja, azonban 35 darabnál több van nála egy időben.", "abbreviation": "MTT"},
+        {"category": "Vétségek", "id": "49.1", "name": "Közúti baleset okozása - Személyi sérülés nélkül", "fine": [30000, 45500], "jail": [0, 0], "description": "Aki a közúti közlekedési szabályainak megsértésével másnak vagy másoknak gondatlanságból kárt okoz.", "abbreviation": "KBOSN"},
+        {"category": "Vétségek", "id": "49.2", "name": "Közúti baleset okozása - Személyi sérüléssel", "fine": [42000, 52000], "jail": [0, 0], "description": "Aki a közúti közlekedési szabályainak megsértésével másnak vagy másoknak gondatlanságból kárt okoz.", "abbreviation": "KBOS"},
+        {"category": "Vétségek", "id": "49.3", "name": "Közúti baleset okozása - Halálesetkor", "fine": [48000, 65000], "jail": [50, 75], "description": "-", "abbreviation": "KBOH"},
+        {"category": "Vétségek", "id": "50", "name": "Járművezetés tiltott átengedése", "fine": [12000, 19500], "jail": [0, 0], "description": "Aki gépi meghajtású jármű vezetését ittas, bódult vagy egyéb vezetésre alkalmatlan személynek átengedi.", "abbreviation": "JTÁ"},
+        {"category": "Vétségek", "id": "51", "name": "Járművezetés befolyásoltság alatt", "fine": [9600, 20800], "jail": [45, 75], "description": "Aki járművet ittasan, bódult állapotban vagy egyéb vezetésre alkalmatlan állapotban vezet.", "abbreviation": "JBA"},
+        {"category": "Vétségek", "id": "52.1", "name": "Garázdaság - Egyedül", "fine": [4800, 13000], "jail": [0, 0], "description": "Kihívóan közösségellenes, erőszakos magatartás, amely alkalmas arra, hogy másokban megbotránkozást vagy riadalmat keltsen.", "abbreviation": "GRM"},
+        {"category": "Vétségek", "id": "52.2", "name": "Garázdaság - Csoportosan", "fine": [9600, 20800], "jail": [30, 30], "description": "-", "abbreviation": "GRCS"},
+        {"category": "Vétségek", "id": "52.3", "name": "Garázdaság - Köznyugalmat súlyosan megzavarva", "fine": [9600, 23400], "jail": [45, 45], "description": "-", "abbreviation": "GRKSM"},
+        {"category": "Vétségek", "id": "52.4", "name": "Garázdaság - Felfegyverkezve", "fine": [12000, 26000], "jail": [75, 75], "description": "-", "abbreviation": "GRFF"},
+        {"category": "Vétségek", "id": "52.5", "name": "Garázdaság - Fegyveresen", "fine": [12000, 26000], "jail": [90, 90], "description": "-", "abbreviation": "GRF"},
+        {"category": "Vétségek", "id": "52.6", "name": "Garázdaság - Nyílvános rendezvényen", "fine": [19200, 39000], "jail": [80, 100], "description": "-", "abbreviation": "GRNYR"},
+        {"category": "Vétségek", "id": "53", "name": "Szeméremsértés", "fine": [24000, 26000], "jail": [30, 30], "description": "Aki magát nemi vágyának felkeltése vagy kielégítése céljából más előtt szeméremsértő módon mutogatja.", "abbreviation": "KSZS"},
+        {"category": "Vétségek", "id": "54", "name": "Hatóság félrevezetése", "fine": [24000, 39000], "jail": [80, 100], "description": "Aki szándékosan valótlant állít a hatóság irányába.", "abbreviation": "HF"},
+        {"category": "Vétségek", "id": "55.1", "name": "Rendőr előli menekülés - Járművel", "fine": [48000, 78000], "jail": [60, 90], "description": "Aki a hatóság utasításának ellenére nem áll meg, vagy jogszerű intézkedés alól próbálja kivonni magát.", "abbreviation": "REMJ"},
+        {"category": "Vétségek", "id": "55.2", "name": "Rendőr előli menekülés - Gyalogosan", "fine": [30000, 39000], "jail": [60, 60], "description": "-", "abbreviation": "REMGY"},
+        {"category": "Vétségek", "id": "56", "name": "Rendőri utasítás megszegése", "fine": [9600, 20800], "jail": [45, 45], "description": "Aki felszólítást követően sem tesz eleget a hatóság utasításának.", "abbreviation": "RUM"},
+        {"category": "Vétségek", "id": "57", "name": "Hivatali személy elleni erőszak", "fine": [19200, 52000], "jail": [90, 120], "description": "-", "abbreviation": "HSZEE"},
+        {"category": "Vétségek", "id": "58.1", "name": "Lopás - Kis értékre (10.000$ - 45.000$)", "fine": [18000, 78000], "jail": [45, 45], "description": "Aki idegen dolgot mástól jogosulatlanul vesz el.", "abbreviation": "LPK"},
+        {"category": "Vétségek", "id": "58.2", "name": "Lopás - Nagy értékre (45.001$ - 100.000$)", "fine": [90000, 143000], "jail": [60, 60], "description": "-", "abbreviation": "LPN"},
+        {"category": "Vétségek", "id": "58.3", "name": "Lopás - Jelentős értékre (100.001$ - 200.000$)", "fine": [144000, 195000], "jail": [75, 75], "description": "-", "abbreviation": "LPJ"},
+        {"category": "Vétségek", "id": "58.4", "name": "Lopás - Különösen nagy értékre (200.001$ - 500.000$)", "fine": [192000, 260000], "jail": [100, 120], "description": "-", "abbreviation": "LPKN"},
+        {"category": "Vétségek", "id": "58.5", "name": "Lopás - Különösen jelentős értékre (500.001$ és felette)", "fine": [300000, 300000], "jail": [120, 150], "description": "-", "abbreviation": "LPKJ"},
+        {"category": "Vétségek", "id": "59.1", "name": "Csalás - Kis értékre (10.000$ - 45.000$)", "fine": [18000, 65000], "jail": [30, 45], "description": "Aki jogtalan haszonszerzés végett mást tévedésbe ejt, vagy tévedésben tart, és ezzel kárt okoz.", "abbreviation": "CSK"},
+        {"category": "Vétségek", "id": "59.2", "name": "Csalás - Nagy értékre (45.001$ - 100.000$)", "fine": [72000, 97500], "jail": [45, 60], "description": "-", "abbreviation": "CSN"},
+        {"category": "Vétségek", "id": "59.3", "name": "Csalás - Jelentős értékre (100.001$ - 200.000$)", "fine": [132000, 169000], "jail": [60, 75], "description": "-", "abbreviation": "CSJ"},
+        {"category": "Vétségek", "id": "59.4", "name": "Csalás - Különösen nagy értékre (200.001$ - 500.000$)", "fine": [180000, 234000], "jail": [75, 90], "description": "-", "abbreviation": "CSKN"},
+        {"category": "Vétségek", "id": "59.5", "name": "Csalás - Különösen jelentős értékre (500.001$ és felette)", "fine": [240000, 300000], "jail": [120, 120], "description": "-", "abbreviation": "CSKJ"},
+        {"category": "Vétségek", "id": "60.1", "name": "Szélhámosság - Kis értékre (10.000$ - 45.000$)", "fine": [18000, 39000], "jail": [0, 0], "description": "Aki jogtalan haszonszerzés végett mást tévedésbe ejt, vagy tévedésben tart, és ezzel kárt próbál okozni.", "abbreviation": "SZHK"},
+        {"category": "Vétségek", "id": "60.2", "name": "Szélhámosság - Nagy értékre (45.001$ - 100.000$)", "fine": [30000, 65000], "jail": [45, 45], "description": "-", "abbreviation": "SZHN"},
+        {"category": "Vétségek", "id": "60.3", "name": "Szélhámosság - Jelentős értékre (100.001$ - 200.000$)", "fine": [60000, 130000], "jail": [60, 60], "description": "-", "abbreviation": "SZHJ"},
+        {"category": "Vétségek", "id": "60.4", "name": "Szélhámosság - Különösen nagy értékre (200.001$ - 500.000$)", "fine": [120000, 195000], "jail": [75, 75], "description": "-", "abbreviation": "SZHKN"},
+        {"category": "Vétségek", "id": "60.5", "name": "Szélhámosság - Különösen jelentős értékre (500.001$ és felette)", "fine": [180000, 260000], "jail": [90, 90], "description": "-", "abbreviation": "SZHKJ"},
+        {"category": "Vétségek", "id": "61.1", "name": "Magánlaksértés - Egyedül", "fine": [24000, 32500], "jail": [30, 45], "description": "Aki más lakásába, egyéb helyiségébe vagy ezekhez tartozó bekerített helyre jogosulatlanul bemegy, illetve ott bent marad.", "abbreviation": "MLSM"},
+        {"category": "Vétségek", "id": "61.2", "name": "Magánlaksértés - Csoportosan", "fine": [24000, 41600], "jail": [60, 60], "description": "-", "abbreviation": "MLSCS"},
+        {"category": "Vétségek", "id": "61.3", "name": "Magánlaksértés - Éjjel", "fine": [33600, 52000], "jail": [45, 45], "description": "-", "abbreviation": "MLSÉ"},
+        {"category": "Vétségek", "id": "61.4", "name": "Magánlaksértés - Felfegyverkezve", "fine": [36000, 57200], "jail": [60, 60], "description": "-", "abbreviation": "MLSFF"},
+        {"category": "Vétségek", "id": "61.5", "name": "Magánlaksértés - Fegyveresen", "fine": [48000, 65000], "jail": [75, 75], "description": "-", "abbreviation": "MLSF"},
+        {"category": "Vétségek", "id": "62.1", "name": "Testi sértés - Könnyű (8 napon belül gyógyuló sérülés)", "fine": [36000, 52000], "jail": [45, 45], "description": "-", "abbreviation": "TSK"},
+        {"category": "Vétségek", "id": "62.2", "name": "Testi sértés - Súlyos (8 napon túl gyógyuló sérülés)", "fine": [36000, 78000], "jail": [60, 60], "description": "-", "abbreviation": "TSS"},
+        {"category": "Vétségek", "id": "63.1", "name": "Engedély nélküli behatolás - Kormányzati területre", "fine": [48000, 65000], "jail": [60, 60], "description": "Aki kormányzati, rendvédelmi vagy honvédelmi területre engedély nélkül megy be vagy ott engedély nélkül bent marad.", "abbreviation": "ENBK"},
+        {"category": "Vétségek", "id": "63.2", "name": "Engedély nélküli behatolás - Rendvédelmi területre", "fine": [60000, 78000], "jail": [75, 75], "description": "-", "abbreviation": "ENBR"},
+        {"category": "Vétségek", "id": "63.3", "name": "Engedély nélküli behatolás - Honvédelmi területre", "fine": [72000, 97500], "jail": [100, 100], "description": "-", "abbreviation": "ENBH"},
+        {"category": "Vétségek", "id": "64", "name": "Pirotechnikai eszköz forgalmazása / felhasználása", "fine": [48000, 78000], "jail": [40, 40], "description": "Pirotechnikai eszköz hatósági engedély nélkül felhasználható minden év November 20 - Január 20 között.", "abbreviation": "PFJ"},
+        {"category": "Vétségek", "id": "65", "name": "Személyes adattal való visszaélés", "fine": [36000, 39000], "jail": [45, 45], "description": "Aki a személyes adatok védelméről / kezeléséről nem megfelelően gondoskodik.", "abbreviation": "SZAVV"},
+        {"category": "Vétségek", "id": "66.1", "name": "Zaklatás - Egyedül", "fine": [24000, 32500], "jail": [0, 0], "description": "Aki abból a célból, hogy mást megfélemlítsen, vagy más magánéletébe, illetve mindennapi életvitelébe önkényesen zavaróan beavatkozzon.", "abbreviation": "ZKM"},
+        {"category": "Vétségek", "id": "66.2", "name": "Zaklatás - Csoportosan", "fine": [30000, 39000], "jail": [45, 45], "description": "-", "abbreviation": "ZKCS"},
+        {"category": "Vétségek", "id": "66.3", "name": "Zaklatás - Hozzátartozó fenyegetésével", "fine": [36000, 65000], "jail": [60, 60], "description": "-", "abbreviation": "ZKHF"},
+        {"category": "Vétségek", "id": "66.4", "name": "Zaklatás - Hatalmi / befolyási helyzettel visszaélve", "fine": [60000, 97500], "jail": [90, 90], "description": "-", "abbreviation": "ZKHB"},
+        {"category": "Vétségek", "id": "67.1", "name": "Rágalmazás - Magában", "fine": [12000, 31200], "jail": [0, 0], "description": "Aki valakiről más előtt a becsület csorbítására alkalmas tényt állít, híresztel.", "abbreviation": "RGM"},
+        {"category": "Vétségek", "id": "67.2", "name": "Rágalmazás - Aljas célból", "fine": [19200, 45500], "jail": [45, 45], "description": "-", "abbreviation": "RGA"},
+        {"category": "Vétségek", "id": "67.3", "name": "Rágalmazás - Nagy nyílvánosság előtt", "fine": [36000, 52000], "jail": [60, 60], "description": "-", "abbreviation": "RGN"},
+        {"category": "Vétségek", "id": "67.4", "name": "Rágalmazás - Jelentős érdeksérelmet okozva", "fine": [36000, 78000], "jail": [75, 75], "description": "-", "abbreviation": "RGJ"},
+        {"category": "Vétségek", "id": "68.1", "name": "Hamis vád - Gondatlanságból", "fine": [16800, 39000], "jail": [0, 0], "description": "Aki mást hatóság előtt vétség vagy bűncselekmény elkövetésével hamisan vádol.", "abbreviation": "HVG"},
+        {"category": "Vétségek", "id": "68.2", "name": "Hamis vád - Szándékosan", "fine": [30000, 65000], "jail": [45, 45], "description": "-", "abbreviation": "HVSZ"},
+        {"category": "Vétségek", "id": "68.3", "name": "Hamis vád - Amennyiben elítélik a sértettet", "fine": [60000, 65000], "jail": [60, 60], "description": "-", "abbreviation": "HVAS"},
+        {"category": "Vétségek", "id": "68.4", "name": "Hamis vád - Hamis bizonyítékot előállítva", "fine": [90000, 97500], "jail": [75, 75], "description": "-", "abbreviation": "HVHB"},
+        {"category": "Vétségek", "id": "69", "name": "Hatósági eljárás megzavarása", "fine": [36000, 39000], "jail": [0, 45], "description": "Aki magatartásával a hatóság eljárását megzavarja, akadályozza vagy meghiúsítja.", "abbreviation": "HEM"},
+        {"category": "Vétségek", "id": "70", "name": "Zugírászat", "fine": [72000, 78000], "jail": [60, 80], "description": "Aki jogosulatlanul és/vagy üzletszerűen ügyvédi, közjegyzői tevékenységet végez.", "abbreviation": "ZÍ"},
+        {"category": "Vétségek", "id": "71.1", "name": "Segítségnyújtás elmulasztása - Magában", "fine": [18000, 19500], "jail": [45, 45], "description": "Aki nem nyújt tőle elvárható segítséget sérült vagy közvetlen veszélyben lévő személynek.", "abbreviation": "SNEM"},
+        {"category": "Vétségek", "id": "71.2", "name": "Segítségnyújtás elmulasztása - Halálesetkor", "fine": [19200, 39000], "jail": [60, 60], "description": "-", "abbreviation": "SNEH"},
+        {"category": "Vétségek", "id": "72.1", "name": "Rendbontás - Egyedül", "fine": [12000, 39000], "jail": [45, 45], "description": "Aki nyilvános rendezvényen a rendező jogszerű intézkedésével szemben ellenállást tanúsít.", "abbreviation": "RNBM"},
+        {"category": "Vétségek", "id": "72.2", "name": "Rendbontás - Csoportosan", "fine": [36000, 52000], "jail": [60, 60], "description": "-", "abbreviation": "RNBCS"},
+        {"category": "Vétségek", "id": "72.3", "name": "Rendbontás - Felfegyverkezve", "fine": [60000, 78000], "jail": [75, 75], "description": "-", "abbreviation": "RNBFF"},
+        {"category": "Vétségek", "id": "72.4", "name": "Rendbontás - Fegyveresen", "fine": [72000, 91000], "jail": [90, 90], "description": "-", "abbreviation": "RNBF"},
+        {"category": "Vétségek", "id": "73.1", "name": "Rongálás - Kis értékre (10.000$ - 45.000$)", "fine": [24000, 71500], "jail": [0, 0], "description": "Aki idegen vagyontárgy megsemmisítésével vagy megrongálásával kárt okoz.", "abbreviation": "RNGK"},
+        {"category": "Vétségek", "id": "73.2", "name": "Rongálás - Nagy értékre (45.001$ - 100.000$)", "fine": [72000, 97500], "jail": [45, 45], "description": "-", "abbreviation": "RNGN"},
+        {"category": "Vétségek", "id": "73.3", "name": "Rongálás - Jelentős értékre (100.001$ - 200.000$)", "fine": [96000, 130000], "jail": [60, 60], "description": "-", "abbreviation": "RNGJ"},
+        {"category": "Vétségek", "id": "73.4", "name": "Rongálás - Különösen nagy értékre (200.001$ - 500.000$)", "fine": [150000, 195000], "jail": [75, 75], "description": "-", "abbreviation": "RNGKN"},
+        {"category": "Vétségek", "id": "73.5", "name": "Rongálás - Különösen jelentős értékre (500.001$ és felette)", "fine": [180000, 227500], "jail": [90, 90], "description": "-", "abbreviation": "RNGKJ"},
+        {"category": "Vétségek", "id": "73.6", "name": "Rongálás - Graffiti esetében", "fine": [6000, 26000], "jail": [0, 0], "description": "-", "abbreviation": "RNGG"},
+        {"category": "Vétségek", "id": "74", "name": "Illegális anyagok gyártásának előkészülete", "fine": [48000, 84500], "jail": [50, 50], "description": "Aki illegális vagy engedélyköteles anyagok gyártására tesz előkészületet.", "abbreviation": "IAE"},
+        {"category": "Vétségek", "id": "75", "name": "Kiszolgáltatott személy megalázása", "fine": [24000, 65000], "jail": [60, 60], "description": "-", "abbreviation": "KSZA"},
+        {"category": "Vétségek", "id": "76.1", "name": "Okirattal visszaélés - Irat birtoklása", "fine": [24000, 32500], "jail": [45, 45], "description": "Aki más közokiratát megszerzi, megsemmisíti, megrongálja vagy eltitkolja.", "abbreviation": "OVB"},
+        {"category": "Vétségek", "id": "76.2", "name": "Okirattal visszaélés - Irat árusítása", "fine": [60000, 65000], "jail": [60, 60], "description": "-", "abbreviation": "OVÁ"},
+        {"category": "Vétségek", "id": "77", "name": "Közösség elleni uszítás", "fine": [24000, 52000], "jail": [45, 60], "description": "Aki nagy nyilvánosság előtt erőszakra, gyűlöletre uszít.", "abbreviation": "KEU"},
+        {"category": "Bűncselekmények", "id": "78", "name": "Cserbenhagyás", "fine": [36000, 52000], "jail": [75, 75], "description": "Ha a közlekedési balesettel érintett jármű vezetője a helyszínen nem áll meg.", "abbreviation": "CSH"},
+        {"category": "Bűncselekmények", "id": "79.1", "name": "Közúti veszélyeztetés - Személyi sérülés nélkül", "fine": [24000, 39000], "jail": [0, 0], "description": "Aki a közúti közlekedés szabályainak megszegésével mások életét vagy testi épségét közvetlen veszélynek teszi ki.", "abbreviation": "KVSN"},
+        {"category": "Bűncselekmények", "id": "79.2", "name": "Közúti veszélyeztetés - Személyi sérülés esetén", "fine": [28800, 52000], "jail": [45, 60], "description": "-", "abbreviation": "KVSE"},
+        {"category": "Bűncselekmények", "id": "79.3", "name": "Közúti veszélyeztetés - Halálesetkor", "fine": [40800, 78000], "jail": [75, 90], "description": "-", "abbreviation": "KVH"},
+        {"category": "Bűncselekmények", "id": "79.4", "name": "Közúti veszélyeztetés - Akadály létesítés", "fine": [24000, 26000], "jail": [0, 0], "description": "-", "abbreviation": "KVA"},
+        {"category": "Bűncselekmények", "id": "80.1", "name": "Illegális töltény birtoklás - 9x19mm, .45 ACP", "fine": [24000, 52000], "jail": [35, 45], "description": "Aki illegális vagy engedélyköteles töltényt birtokol engedély nélkül.", "abbreviation": "ITBK"},
+        {"category": "Bűncselekmények", "id": "80.2", "name": "Illegális töltény birtoklás - Egyéb", "fine": [48000, 91000], "jail": [40, 60], "description": "-", "abbreviation": "ITBE"},
+        {"category": "Bűncselekmények", "id": "81.1", "name": "Illegális töltény árusítás - 9x19mm, .45 ACP", "fine": [24000, 78000], "jail": [45, 75], "description": "Aki illegális vagy engedélyköteles töltényt árusít.", "abbreviation": "ITÁK"},
+        {"category": "Bűncselekmények", "id": "81.2", "name": "Illegális töltény árusítás - Egyéb", "fine": [48000, 97500], "jail": [50, 90], "description": "-", "abbreviation": "ITÁE"},
+        {"category": "Bűncselekmények", "id": "82.1", "name": "Illegális fegyver birtoklás - Kézifegyver", "fine": [48000, 52000], "jail": [30, 30], "description": "Illegális vagy engedélyköteles fegyver birtoklása engedély nélkül (kés, vipera, boxer, stb.).", "abbreviation": "IFBKF"},
+        {"category": "Bűncselekmények", "id": "82.2", "name": "Illegális fegyver birtoklás - Engedélyköteles fegyverek", "fine": [72000, 78000], "jail": [60, 60], "description": "Engedélyköteles maroklőfegyver birtoklása engedély nélkül.", "abbreviation": "IFBK"},
+        {"category": "Bűncselekmények", "id": "82.3", "name": "Illegális fegyver birtoklás - Egyéb fegyver", "fine": [144000, 156000], "jail": [80, 80], "description": "Minden egyéb, nem részletezett fegyvertípus.", "abbreviation": "IFBE"},
+        {"category": "Bűncselekmények", "id": "83.1", "name": "Illegális fegyver árusítás - Kézifegyver", "fine": [90000, 97500], "jail": [60, 60], "description": "Illegális vagy engedélyköteles fegyver árusítása.", "abbreviation": "IFÁKF"},
+        {"category": "Bűncselekmények", "id": "83.2", "name": "Illegális fegyver árusítás - Engedélyköteles fegyverek", "fine": [120000, 130000], "jail": [90, 90], "description": "-", "abbreviation": "IFÁK"},
+        {"category": "Bűncselekmények", "id": "83.3", "name": "Illegális fegyver árusítás - Egyéb fegyver", "fine": [180000, 195000], "jail": [120, 120], "description": "-", "abbreviation": "IFÁE"},
+        {"category": "Bűncselekmények", "id": "84.1", "name": "Fegyveralkatrész - Birtoklása", "fine": [36000, 65000], "jail": [45, 45], "description": "Illegális vagy engedélyköteles fegyveralkatrész birtoklása.", "abbreviation": "IFAB"},
+        {"category": "Bűncselekmények", "id": "84.2", "name": "Fegyveralkatrész - Árusítása", "fine": [72000, 104000], "jail": [60, 60], "description": "-", "abbreviation": "IFAÁ"},
+        {"category": "Bűncselekmények", "id": "85.1", "name": "Kábítószer birtoklás - Kis tétel (1-5g)", "fine": [12000, 52000], "jail": [0, 30], "description": "Illegális vagy engedélyköteles kábító, bódító, tudatmódosító szer birtoklása.", "abbreviation": "IKBK"},
+        {"category": "Bűncselekmények", "id": "85.2", "name": "Kábítószer birtoklás - Nagy tétel (6-25g)", "fine": [30000, 97500], "jail": [45, 60], "description": "-", "abbreviation": "IKBN"},
+        {"category": "Bűncselekmények", "id": "85.3", "name": "Kábítószer birtoklás - Kereskedői tétel (26g+)", "fine": [90000, 130000], "jail": [75, 100], "description": "-", "abbreviation": "IKBT"},
+        {"category": "Bűncselekmények", "id": "86.1", "name": "Kábítószer árusítás - Kis tétel (1-5g)", "fine": [30000, 65000], "jail": [20, 40], "description": "Illegális vagy engedélyköteles kábító, bódító, tudatmódosító szer árusítása.", "abbreviation": "IKÁK"},
+        {"category": "Bűncselekmények", "id": "86.2", "name": "Kábítószer árusítás - Nagy tétel (6-25g)", "fine": [60000, 130000], "jail": [50, 80], "description": "-", "abbreviation": "IKÁN"},
+        {"category": "Bűncselekmények", "id": "86.3", "name": "Kábítószer árusítás - Kereskedői tétel (26g+)", "fine": [144000, 234000], "jail": [90, 120], "description": "-", "abbreviation": "IKÁT"},
+        {"category": "Bűncselekmények", "id": "87.1", "name": "Kábítószer alkotóelem - Birtoklása", "fine": [24000, 39000], "jail": [0, 30], "description": "Kábítószer előállításához szükséges illegális alkotóelem birtoklása.", "abbreviation": "IKAB"},
+        {"category": "Bűncselekmények", "id": "87.2", "name": "Kábítószer alkotóelem - Árusítása", "fine": [48000, 78000], "jail": [30, 60], "description": "-", "abbreviation": "IKAÁ"},
+        {"category": "Bűncselekmények", "id": "88", "name": "Kábítószer termesztés", "fine": [90000, 130000], "jail": [75, 75], "description": "Engedély nélkül olyan növény termesztése, melyből kábítószer készíthető.", "abbreviation": "IKT"},
+        {"category": "Bűncselekmények", "id": "89.1", "name": "Illegális tárgyak gyártása - Fegyver", "fine": [90000, 97500], "jail": [90, 90], "description": "Illegális vagy engedélyköteles fegyver vagy anyag gyártása.", "abbreviation": "ITGYF"},
+        {"category": "Bűncselekmények", "id": "89.2", "name": "Illegális tárgyak gyártása - Kábítószer", "fine": [54000, 97500], "jail": [60, 60], "description": "-", "abbreviation": "ITGYK"},
+        {"category": "Bűncselekmények", "id": "90.1", "name": "Katonai felszerelés - Birtoklása", "fine": [60000, 195000], "jail": [60, 60], "description": "Lezárt hadianyag/felszerelés birtoklása.", "abbreviation": "KAFB"},
+        {"category": "Bűncselekmények", "id": "90.2", "name": "Katonai felszerelés - Árusítása", "fine": [180000, 260000], "jail": [100, 100], "description": "-", "abbreviation": "KAFÁ"},
+        {"category": "Bűncselekmények", "id": "91", "name": "Kuruzslás", "fine": [30000, 65000], "jail": [0, 45], "description": "Jogosulatlanul orvosi, pszichoterápiás, természetgyógyászati tevékenységet végez.", "abbreviation": "KRZS"},
+        {"category": "Bűncselekmények", "id": "92", "name": "Embercsempészés", "fine": [48000, 78000], "jail": [30, 60], "description": "Határ vagy rendvédelmi intézkedés megkerülésének céljából más személyt szállít.", "abbreviation": "EMCS"},
+        {"category": "Bűncselekmények", "id": "93", "name": "Jármű önkényes elvétele", "fine": [24000, 52000], "jail": [0, 45], "description": "Idegen gépi meghajtású járművet jogtalanul használ.", "abbreviation": "JÖE"},
+        {"category": "Bűncselekmények", "id": "94", "name": "Uzsora", "fine": [54000, 84500], "jail": [50, 50], "description": "Különösen aránytalan mértékű ellenszolgáltatást tartalmazó megállapodást köt.", "abbreviation": "UZSR"},
+        {"category": "Bűncselekmények", "id": "95", "name": "Bitorlás", "fine": [18000, 58500], "jail": [0, 30], "description": "Más szellemi alkotását sajátjaként tünteti fel.", "abbreviation": "BTR"},
+        {"category": "Bűncselekmények", "id": "96", "name": "Tiltott adatszerzés", "fine": [30000, 97500], "jail": [0, 45], "description": "Jogosulatlanul személyes adat, magántitok, gazdasági titok vagy üzleti titok megismerése céljából adatgyűjtést végez.", "abbreviation": "TASZ"},
+        {"category": "Bűncselekmények", "id": "97", "name": "Információs rendszer vagy adat megsértése", "fine": [30000, 65000], "jail": [50, 50], "description": "Információs rendszerbe jogosulatlanul belép, adatot másít, töröl.", "abbreviation": "IRM"},
+        {"category": "Bűncselekmények", "id": "98.1", "name": "Emberrablás - Egyedül", "fine": [36000, 58500], "jail": [75, 75], "description": "Mást személyi szabadságától erőszakkal, fenyegetéssel megfoszt.", "abbreviation": "ERM"},
+        {"category": "Bűncselekmények", "id": "98.2", "name": "Emberrablás - Bűnszövetségben", "fine": [60000, 65000], "jail": [90, 90], "description": "-", "abbreviation": "ERBSZ"},
+        {"category": "Bűncselekmények", "id": "98.3", "name": "Emberrablás - Felfegyverkezve", "fine": [36000, 39000], "jail": [75, 75], "description": "-", "abbreviation": "ERFF"},
+        {"category": "Bűncselekmények", "id": "98.4", "name": "Emberrablás - Fegyveresen", "fine": [60000, 65000], "jail": [90, 90], "description": "-", "abbreviation": "ERF"},
+        {"category": "Bűncselekmények", "id": "98.5", "name": "Emberrablás - Hivatalos személyt", "fine": [96000, 104000], "jail": [120, 120], "description": "-", "abbreviation": "ERHSZ"},
+        {"category": "Bűncselekmények", "id": "98.6", "name": "Emberrablás - Súlyos sérülés esetén", "fine": [90000, 97500], "jail": [30, 60], "description": "-", "abbreviation": "ERSTS"},
+        {"category": "Bűncselekmények", "id": "98.7", "name": "Emberrablás - Előkészülete", "fine": [30000, 32500], "jail": [45, 45], "description": "-", "abbreviation": "EREK"},
+        {"category": "Bűncselekmények", "id": "98.8", "name": "Emberrablás - Feljelentésének elmulasztása", "fine": [30000, 32500], "jail": [0, 45], "description": "-", "abbreviation": "ERFE"},
+        {"category": "Bűncselekmények", "id": "99.1", "name": "Rablás - Egyedül", "fine": [48000, 52000], "jail": [45, 45], "description": "Idegen dolgot erőszakkal vagy fenyegetéssel vesz el.", "abbreviation": "RBM"},
+        {"category": "Bűncselekmények", "id": "99.2", "name": "Rablás - Bűnszövetségben", "fine": [72000, 78000], "jail": [60, 90], "description": "-", "abbreviation": "RBSZ"},
+        {"category": "Bűncselekmények", "id": "99.3", "name": "Rablás - Felfegyverkezve", "fine": [60000, 65000], "jail": [60, 90], "description": "-", "abbreviation": "RBFF"},
+        {"category": "Bűncselekmények", "id": "99.4", "name": "Rablás - Fegyveresen", "fine": [72000, 78000], "jail": [90, 90], "description": "-", "abbreviation": "RBF"},
+        {"category": "Bűncselekmények", "id": "99.5", "name": "Rablás - Hivatalos személyt", "fine": [96000, 104000], "jail": [100, 100], "description": "-", "abbreviation": "RBHSZ"},
+        {"category": "Bűncselekmények", "id": "100.1", "name": "Kifosztás - Egyedül", "fine": [42000, 45500], "jail": [30, 30], "description": "Idegen dolgot úgy vesz el, hogy az illetőt lerészegíti, bódult állapotát kihasználja.", "abbreviation": "KFM"},
+        {"category": "Bűncselekmények", "id": "100.2", "name": "Kifosztás - Bűnszövetségben", "fine": [54000, 58500], "jail": [60, 60], "description": "-", "abbreviation": "KFSZ"},
+        {"category": "Bűncselekmények", "id": "100.3", "name": "Kifosztás - Jelentős értékre (100.000$+)", "fine": [96000, 156000], "jail": [90, 90], "description": "-", "abbreviation": "KFJE"},
+        {"category": "Bűncselekmények", "id": "101.1", "name": "Zsarolás - Egyedül", "fine": [36000, 39000], "jail": [30, 30], "description": "Erőszakkal vagy fenyegetéssel kényszerít, és ezzel vagyoni hátrányt okoz.", "abbreviation": "ZSRM"},
+        {"category": "Bűncselekmények", "id": "101.2", "name": "Zsarolás - Bűnszövetségben", "fine": [54000, 58500], "jail": [45, 45], "description": "-", "abbreviation": "ZSRSZ"},
+        {"category": "Bűncselekmények", "id": "101.3", "name": "Zsarolás - Élet vagy testi épség súlyos fenyegetésével", "fine": [90000, 97500], "jail": [60, 60], "description": "-", "abbreviation": "ZSRÉT"},
+        {"category": "Bűncselekmények", "id": "101.4", "name": "Zsarolás - Hivatalos megbízás színlelésével", "fine": [66000, 71500], "jail": [50, 50], "description": "-", "abbreviation": "ZSRHM"},
+        {"category": "Bűncselekmények", "id": "101.5", "name": "Zsarolás - Hivatalos személyként", "fine": [120000, 130000], "jail": [100, 100], "description": "-", "abbreviation": "ZSRHS"},
+        {"category": "Bűncselekmények", "id": "102.1", "name": "Illegális határátlépés - Egyedül", "fine": [24000, 26000], "jail": [20, 45], "description": "Határon hamis iratokkal vagy határellenőrzést megkerülve megy át.", "abbreviation": "IHM"},
+        {"category": "Bűncselekmények", "id": "102.2", "name": "Illegális határátlépés - Csoportosan", "fine": [30000, 32500], "jail": [30, 60], "description": "-", "abbreviation": "IHCS"},
+        {"category": "Bűncselekmények", "id": "102.3", "name": "Illegális határátlépés - Felfegyverkezve", "fine": [36000, 39000], "jail": [60, 60], "description": "-", "abbreviation": "IHFF"},
+        {"category": "Bűncselekmények", "id": "102.4", "name": "Illegális határátlépés - Fegyveresen", "fine": [48000, 52000], "jail": [60, 90], "description": "-", "abbreviation": "IHF"},
+        {"category": "Bűncselekmények", "id": "103", "name": "Határzár megrongálása", "fine": [60000, 130000], "jail": [100, 100], "description": "Hivatalos szerv által elrendelt határzárat megrongálja, megsemmisíti vagy feloldja.", "abbreviation": "HM"},
+        {"category": "Bűncselekmények", "id": "104", "name": "Hivatalos személynek való kiadás", "fine": [42000, 65000], "jail": [80, 100], "description": "Hivatalos személyként azonosítja magát előny szerzése végett.", "abbreviation": "HSZVK"},
+        {"category": "Bűncselekmények", "id": "105", "name": "Okirathamisítás", "fine": [18000, 26000], "jail": [30, 75], "description": "Valótlan tartalmú iratot készít vagy használ.", "abbreviation": "OH"},
+        {"category": "Bűncselekmények", "id": "106", "name": "Hivatali személy megvesztegetése", "fine": [36000, 39000], "jail": [60, 100], "description": "Hivatali személynek előnyt kínál, hogy kötelességét megszegje.", "abbreviation": "HSZM"},
+        {"category": "Bűncselekmények", "id": "107.1", "name": "Vesztegetés - Felkínálása", "fine": [90000, 130000], "jail": [0, 60], "description": "Cég/szervezet érdekében tevékenykedőnek előnyt kínál.", "abbreviation": "VSZF"},
+        {"category": "Bűncselekmények", "id": "107.2", "name": "Vesztegetés - Elfogadása", "fine": [108000, 143000], "jail": [30, 90], "description": "-", "abbreviation": "VSZE"},
+        {"category": "Bűncselekmények", "id": "108", "name": "Befolyással üzérkedés", "fine": [120000, 195000], "jail": [75, 75], "description": "Arra hivatkozik, hogy 3. személyt befolyásol, vagy jogtalan előnyt ígér.", "abbreviation": "BÜ"},
+        {"category": "Bűncselekmények", "id": "109", "name": "Szexuális erőszak", "fine": [36000, 130000], "jail": [120, 120], "description": "Szexuális kényszerítést erőszakkal, fenyegetéssel követi el.", "abbreviation": "SZE"},
+        {"category": "Bűncselekmények", "id": "110", "name": "Szexuális kényszerítés", "fine": [36000, 97500], "jail": [100, 100], "description": "Mást szexuális cselekményre vagy annak eltűrésére kényszerít.", "abbreviation": "SZK"},
+        {"category": "Bűncselekmények", "id": "111", "name": "Kerítés", "fine": [24000, 39000], "jail": [60, 80], "description": "Haszonszerzés céljából valakit szexuális cselekmény végzésére másnak megszerez.", "abbreviation": "KT"},
+        {"category": "Bűncselekmények", "id": "112.1", "name": "Prostitúció - Magában", "fine": [18000, 39000], "jail": [0, 45], "description": "Haszonszerzés céljából szexuális cselekményt végez.", "abbreviation": "PRM"},
+        {"category": "Bűncselekmények", "id": "112.2", "name": "Prostitúció - Mást prostitúcióra rábír", "fine": [12000, 26000], "jail": [0, 60], "description": "-", "abbreviation": "PRR"},
+        {"category": "Bűncselekmények", "id": "112.3", "name": "Prostitúció - Kényszerítése", "fine": [24000, 52000], "jail": [90, 90], "description": "-", "abbreviation": "PRK"},
+        {"category": "Bűncselekmények", "id": "112.4", "name": "Prostitúció - Épületet rendelkezésre bocsájt", "fine": [48000, 52000], "jail": [90, 90], "description": "-", "abbreviation": "PRÉB"},
+        {"category": "Bűncselekmények", "id": "112.5", "name": "Prostitúció - Bordélyház fenntartása", "fine": [90000, 97500], "jail": [120, 120], "description": "-", "abbreviation": "PRBÜ"},
+        {"category": "Bűncselekmények", "id": "113.1", "name": "Gyilkosság - Emberölési kísérlet", "fine": [108000, 156000], "jail": [100, 100], "description": "-", "abbreviation": "EKCSZSZ"},
+        {"category": "Bűncselekmények", "id": "113.2", "name": "Gyilkosság - Emberölési kísérlet hiv. személlyel szemben", "fine": [180000, 195000], "jail": [150, 180], "description": "-", "abbreviation": "EKHSZSZ"},
+        {"category": "Bűncselekmények", "id": "113.3", "name": "Gyilkosság", "fine": [216000, 234000], "jail": [120, 120], "description": "-", "abbreviation": "GYK"},
+        {"category": "Bűncselekmények", "id": "113.4", "name": "Gyilkosság - Hivatalos személy meggyilkolása", "fine": [240000, 260000], "jail": [190, 190], "description": "-", "abbreviation": "GYKH"},
+        {"category": "Bűncselekmények", "id": "114", "name": "Pénz / Fegyverszállító eltulajdonítása", "fine": [84000, 91000], "jail": [100, 100], "description": "Pénz vagy fegyverszállító jogosulatlan eltulajdonítása.", "abbreviation": "PFSZE"},
+        {"category": "Bűncselekmények", "id": "115", "name": "ATM Rablás", "fine": [108000, 208000], "jail": [60, 120], "description": "Bankautomata megrongálása és/vagy a benne lévő pénz eltulajdonítása.", "abbreviation": "ATMR"},
+        {"category": "Bűncselekmények", "id": "116.1", "name": "Bank / Aranyraktár rablás - Egyedül", "fine": [108000, 195000], "jail": [80, 100], "description": "Bankból/Aranyraktárból pénz, arany, egyéb értékes tárgy eltulajdonítása.", "abbreviation": "BAKM"},
+        {"category": "Bűncselekmények", "id": "116.2", "name": "Bank / Aranyraktár rablás - Bűnszövetségben", "fine": [120000, 227500], "jail": [120, 120], "description": "-", "abbreviation": "BAKSZ"},
+        {"category": "Bűncselekmények", "id": "116.3", "name": "Bank / Aranyraktár rablás - Felfegyverkezve", "fine": [48000, 78000], "jail": [60, 60], "description": "-", "abbreviation": "BAKFF"},
+        {"category": "Bűncselekmények", "id": "116.4", "name": "Bank / Aranyraktár rablás - Fegyveresen", "fine": [54000, 97500], "jail": [90, 90], "description": "-", "abbreviation": "BAKF"},
+        {"category": "Bűncselekmények", "id": "116.5", "name": "Bank / Aranyraktár rablás - Pénzszállító eltulajdonítása", "fine": [156000, 169000], "jail": [60, 60], "description": "-", "abbreviation": "BAKPE"},
+        {"category": "Bűncselekmények", "id": "116.6", "name": "Bank / Aranyraktár rablás - Alkalmazottnak adva ki magát", "fine": [48000, 65000], "jail": [60, 60], "description": "Hamis okirat / fuvarlevél esetében is.", "abbreviation": "BAKA"},
+        {"category": "Bűncselekmények", "id": "116.7", "name": "Bank / Aranyraktár rablás - Jogosulatlan behatolás", "fine": [72000, 78000], "jail": [45, 45], "description": "-", "abbreviation": "BAKJB"},
+        {"category": "Bűncselekmények", "id": "116.8", "name": "Bank / Aranyraktár rablás - Jogosulatlan behatolás kísérlete", "fine": [60000, 65000], "jail": [30, 30], "description": "-", "abbreviation": "BAKJBK"},
+        {"category": "Bűncselekmények", "id": "117", "name": "Hatósági rendelkezés elleni uszítás", "fine": [48000, 130000], "jail": [0, 60], "description": "Nagy nyilvánosság előtt hatóság rendelkezése ellen általános engedetlenségre uszít.", "abbreviation": "HREU"},
+        {"category": "Bűncselekmények", "id": "118", "name": "Önbíráskodás", "fine": [60000, 65000], "jail": [60, 60], "description": "Jogos vagy jogosnak vélt vagyoni igénynek erőszakkal vagy fenyegetéssel szerez érvényt.", "abbreviation": "ÖB"},
+        {"category": "Bűncselekmények", "id": "119", "name": "Bűnszervezetben való részvétel", "fine": [96000, 104000], "jail": [90, 90], "description": "(( Maffia, Cartel, Banda, Bűnhálózat vezetője, tagja stb és ez kiderül IC. ))", "abbreviation": "BVR"},
+        {"category": "Bűncselekmények", "id": "120", "name": "Hamis tanúzás", "fine": [30000, 32500], "jail": [0, 60], "description": "A tanú a hatóság előtt valótlant állít, vagy a valóságot elhallgatja.", "abbreviation": "HT"},
+        {"category": "Bűncselekmények", "id": "121", "name": "Tanúvallomás jogosulatlan megtagadása", "fine": [24000, 65000], "jail": [45, 60], "description": "A tanú figyelmeztetés után is jogosulatlanul megtagadja a vallomástételt.", "abbreviation": "TJM"},
+        {"category": "Bűncselekmények", "id": "122", "name": "Nyomozás hátráltatása / akadályoztatása", "fine": [24000, 130000], "jail": [0, 120], "description": "Aki egy nyomozást hátráltat, akadályoz vagy szándékosan meghiúsít.", "abbreviation": "NYH"},
+        {"category": "Bűncselekmények", "id": "123", "name": "Zártörés", "fine": [60000, 65000], "jail": [45, 45], "description": "Hatósági eljárás során alkalmazott pecsétet eltávolít vagy megsért.", "abbreviation": "ZTR"},
+        {"category": "Bűncselekmények", "id": "124", "name": "Öngyilkosságban közreműködés", "fine": [60000, 65000], "jail": [90, 90], "description": "Aki mást öngyilkosságra rábír, vagy ehhez segítséget nyújt.", "abbreviation": "ÖNKK"},
+        {"category": "Bűncselekmények", "id": "125", "name": "Kényszerítés", "fine": [48000, 65000], "jail": [30, 90], "description": "Aki mást erőszakkal vagy fenyegetéssel arra kényszerít, hogy valamit tegyen, ne tegyen vagy eltűrjön.", "abbreviation": "KNSZ"},
+        {"category": "Bűncselekmények", "id": "126", "name": "Minősített adattal való visszaélés", "fine": [72000, 104000], "jail": [45, 100], "description": "Minősített adatot jogosulatlanul megszerez, megmásít, felhasznál, vagy hozzáférhetővé tesz.", "abbreviation": "MAVV"},
+        {"category": "Bűncselekmények", "id": "127", "name": "Ügyvédi visszaélés", "fine": [48000, 104000], "jail": [60, 120], "description": "Az az ügyvéd aki ügyfelének jogtalan hátrányt okoz.", "abbreviation": "ÜVSZ"},
+        {"category": "Bűncselekmények", "id": "128", "name": "Fogolyszökés", "fine": [120000, 130000], "jail": [90, 90], "description": "A fogvatartott a büntetés letöltését megelőzően jogosulatlanul elhagyja a fogdát.", "abbreviation": "FSZ"},
+        {"category": "Bűncselekmények", "id": "129", "name": "Fogolyszöktetés", "fine": [156000, 169000], "jail": [120, 120], "description": "Aki jogosulatlanul lehetővé teszi egy fogvatartott számára a szökést.", "abbreviation": "FSZK"},
+        {"category": "Bűncselekmények", "id": "130", "name": "Fogolyzendülés", "fine": [60000, 65000], "jail": [45, 45], "description": "A fogvatartott nem működik együtt az őrökkel, erőszakosan lép fel, vagy erre buzdít.", "abbreviation": "FZ"},
+        {"category": "Bűncselekmények", "id": "131", "name": "Egyedi azonosító jellel visszaélés", "fine": [96000, 156000], "jail": [60, 120], "description": "Egyedi azonosító jelet (pl. rendszámtábla) eltávolít, meghamisít, jogosulatlanul használ.", "abbreviation": "EJV"},
+        {"category": "Bűncselekmények", "id": "132", "name": "Egyedi fényezéssel való visszaélés", "fine": [120000, 195000], "jail": [90, 130], "description": "Félrevezető, sértő, vagy trágár fényezést használ járművén.", "abbreviation": "EFV"},
+        {"category": "Bűncselekmények", "id": "133", "name": "Haditechnika megrongálása", "fine": [48000, 78000], "jail": [0, 60], "description": "Szándékosan vagy gondatlanságból haditechnikát rongál meg.", "abbreviation": "HTM"},
+        {"category": "Bűncselekmények", "id": "134", "name": "Légtérsértés", "fine": [60000, 156000], "jail": [0, 100], "description": "Engedély nélkül száll fel vagy repül See City légterében.", "abbreviation": "LTS"},
+        {"category": "Bűncselekmények", "id": "135", "name": "Tiltott repülési zónába való berepülés", "fine": [72000, 169000], "jail": [0, 120], "description": "Tiltott repülési zónába vezeti légi járművét.", "abbreviation": "TRZB"},
+        {"category": "Bűncselekmények", "id": "136.1", "name": "Illegális rendezvény - Szervezése", "fine": [54000, 130000], "jail": [0, 120], "description": "Előzetes engedély nélkül állami területen rendezvényt szervez.", "abbreviation": "IRSZ"},
+        {"category": "Bűncselekmények", "id": "136.2", "name": "Illegális rendezvény - Részvétel", "fine": [0, 65000], "jail": [0, 60], "description": "-", "abbreviation": "IRVR"},
+        {"category": "Bűncselekmények", "id": "137", "name": "Terrorcselekmény", "fine": [300000, 300000], "jail": [420, 420], "description": "Állami szerv kényszerítése, lakosság megfélemlítése. Enyhítésre nincs lehetőség.", "abbreviation": "TRCS"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "138", "name": "Adócsalás", "fine": [150000, 150000], "jail": [200, 240], "description": "Adóilleték befizetését próbálja elkerülni, vagy hamisan szolgáltat információt.", "abbreviation": "ACS"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "139", "name": "Illegális munkavállalás", "fine": [15000, 25000], "jail": [20, 45], "description": "Be nem jelentett munkát végez.", "abbreviation": "IMV"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "140", "name": "Bejegyzetlen cég működtetése", "fine": [30000, 100000], "jail": [60, 180], "description": "Olyan céget működtet, melyet nem jelent be a NAV irányába.", "abbreviation": "BCM"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "141", "name": "ÁFÁ-s számla kiállításának elmulasztása", "fine": [20000, 60000], "jail": [0, 0], "description": "Törvényi kötelezettsége ellenére nem állít ki számlát.", "abbreviation": "SZKE"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "142", "name": "Sikkasztás", "fine": [30000, 100000], "jail": [50, 180], "description": "A rábízott idegen dolgot jogtalanul eltulajdonítja.", "abbreviation": "SK"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "143", "name": "Gazdasági csalás", "fine": [15000, 60000], "jail": [30, 90], "description": "Színlelt gazdasági tevékenységet végez, és ezzel vagyoni hátrányt okoz.", "abbreviation": "GCSLS"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "144", "name": "Költségvetési csalás", "fine": [20000, 75000], "jail": [60, 120], "description": "A költségvetésnek vagyoni hátrányt okoz.", "abbreviation": "KCSLS"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "145", "name": "Pénzmosás", "fine": [45000, 120000], "jail": [80, 120], "description": "Büntetendő cselekményből származó vagyon eredetét elfedi vagy elleplezi.", "abbreviation": "PZM"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "146", "name": "Jogosulatlan pénzügyi tevékenység", "fine": [50000, 100000], "jail": [60, 120], "description": "Engedély nélkül pénzügyi, befektetési, banki, stb. szolgáltatást végez.", "abbreviation": "JPT"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "147", "name": "Üzleti titok megsértése", "fine": [40000, 80000], "jail": [30, 90], "description": "Üzleti titkot jogosulatlanul megszerez, felhasznál, vagy nyilvánosságra hoz.", "abbreviation": "ÜTM"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "148", "name": "Versenytárs utánzása", "fine": [80000, 120000], "jail": [120, 180], "description": "A versenytárs jellegzetes áruját utánozza.", "abbreviation": "VTU"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "149", "name": "Számvitel rendjének megsértése", "fine": [80000, 150000], "jail": [0, 180], "description": "A számvitelt nem átláthatóan, vagy hamisan vezeti.", "abbreviation": "SZRM"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "150", "name": "Gazdasági adatszolgáltatási kötelezettség elmulasztása", "fine": [80000, 150000], "jail": [0, 180], "description": "Szándékosan hamis információkat szolgáltat az adóhatóság felé.", "abbreviation": "GAKE"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "151", "name": "Fogyasztók, vásárlók megtévesztése", "fine": [60000, 120000], "jail": [60, 200], "description": "A szolgáltatás, termék alkalmas a fogyasztók megtévesztésére.", "abbreviation": "FVM"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "152", "name": "Tartozás fedezetének elvonása", "fine": [0, 0], "jail": [45, 110], "description": "A követelés fedezetéül szolgáló vagyont elvonja.", "abbreviation": "TFE"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "153", "name": "Szerződésszegés", "fine": [25000, 60000], "jail": [0, 0], "description": "A kötött szerződést nem tartja be, megsérti, vagy jogosulatlanul felbontja.", "abbreviation": "SZSZ"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "154", "name": "Vállalkozói engedély hiánya", "fine": [30000, 100000], "jail": [120, 120], "description": "Be nem jelentett céget működtet, vagy adóköteles hasznot szerez.", "abbreviation": "VEH"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "155", "name": "Vállalkozói kártya hiánya", "fine": [30000, 100000], "jail": [0, 0], "description": "Nem tudja felmutatni a bejegyzett cég engedélyét.", "abbreviation": "VKH"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "156", "name": "Számlatömb határidőn belüli bemutatásának elmulasztása", "fine": [20000, 20000], "jail": [0, 0], "description": "A 20.000$ naponként számolandó.", "abbreviation": "SZHBBE"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "157", "name": "Hamis számla kiadása", "fine": [150000, 150000], "jail": [100, 200], "description": "Hamis, valóságnak nem megfelelő adatok alapján készít és ad ki számlát.", "abbreviation": "HSZK"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "158", "name": "Hamis számla bemutatása", "fine": [150000, 150000], "jail": [100, 200], "description": "Hamis számlát használ fel jogtalan haszonszerzés céljából.", "abbreviation": "HSZB"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "159", "name": "Számlatömbbel való visszaélés", "fine": [40000, 80000], "jail": [120, 180], "description": "Cég számlatömbjét adócsalás, vagyonszerzés céljából használja fel.", "abbreviation": "SZVV"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "160", "name": "Vállalkozói engedély illetéktelen továbbadása", "fine": [40000, 40000], "jail": [60, 60], "description": "Cég vállalkozói engedélyét jogosulatlanul továbbadja.", "abbreviation": "VEIT"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "161", "name": "Vállalkozói engedéllyel való visszaélés", "fine": [60000, 60000], "jail": [90, 90], "description": "Cég vállalkozói engedélyét jogosulatlanul felhasználja, visszaél vele.", "abbreviation": "VÁEVV"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "162", "name": "Bejelentetlen egyéni vállalkozó foglalkoztatása", "fine": [40000, 100000], "jail": [60, 60], "description": "Az alkalmazottja bejelentetetlenül végzi a tevékenységét.", "abbreviation": "BEVF"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "163", "name": "Késői kasszazárás", "fine": [30000, 30000], "jail": [0, 0], "description": "Alkalmanként számolandó fel az összeg.", "abbreviation": "KK"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "164", "name": "Költségvetési csaláshoz kapcsolódó felügyeleti kötelezettség elmulasztása", "fine": [100000, 150000], "jail": [300, 300], "description": "A pénzügyőr felügyeleti vagy ellenőrzési kötelezettségét elmulasztja.", "abbreviation": "FVEKE"},
+        {"category": "Gazdasági bűncselekmények [NAV Hatáskör]", "id": "165", "name": "Cégjegyzékkel kapcsolatos információk jogosulatlan módosítása", "fine": [100000, 150000], "jail": [240, 240], "description": "A pénzügyőr jogosulatlanul módosít cégjegyzékkel kapcsolatos információt.", "abbreviation": "IJM"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "166", "name": "Dezertálás", "fine": [0, 0], "jail": [300, 300], "description": "A hadköteles katonai szolgálatának teljesítését megtagadja.", "abbreviation": "DZ"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "167", "name": "Parancsmegtagadás", "fine": [0, 0], "jail": [300, 300], "description": "A hivatali személy vagy hadköteles felettesének jogszerű utasítását megtagadja.", "abbreviation": "PM"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "168", "name": "Szolgálati lőfegyverrel való visszaélés", "fine": [60000, 65000], "jail": [200, 200], "description": "A hivatali személy vagy hadköteles szolgálati lőfegyverével visszaél.", "abbreviation": "SZLV"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "169", "name": "Függelemsértés", "fine": [36000, 91000], "jail": [0, 120], "description": "Az elöljáró vagy az alárendelt tekintélyét más előtt feltűnően durván megsérti.", "abbreviation": "FS"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "170", "name": "Elöljárói intézkedés elmulasztása", "fine": [0, 0], "jail": [0, 0], "description": "Az elöljáró az alárendelt kötelességszegését nem akadályozza meg, vagy nem vonja felelősségre.", "abbreviation": "EIE"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "171.1", "name": "Korrupció - Magában", "fine": [84000, 195000], "jail": [220, 300], "description": "A hivatalos személy vesztegetésért cserébe valamit tesz, nem tesz vagy eltűr.", "abbreviation": "KRPM"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "171.2", "name": "Korrupció - Feljelentésének elmulasztása", "fine": [60000, 130000], "jail": [120, 250], "description": "-", "abbreviation": "KRPFE"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "172", "name": "Jelentési kötelezettség megszegése", "fine": [72000, 143000], "jail": [100, 130], "description": "Fontos szolgálati ügyben valótlan jelentést tesz.", "abbreviation": "JKMSZ"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "173", "name": "Hivatali visszaélés", "fine": [60000, 130000], "jail": [120, 180], "description": "A hivatalos személy hivatali kötelességét megszegi, túllépi, vagy helyzetével egyébként visszaél.", "abbreviation": "HIVV"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "174", "name": "Kötelezettségmulasztás", "fine": [60000, 117000], "jail": [80, 300], "description": "Az állami alkalmazott kötelezettségének nem tesz eleget.", "abbreviation": "KML"},
+        {"category": "Katonai, rendészeti, hivatali bűncselekmények", "id": "175", "name": "Érvénytelen forgalmi engedély kiállítása", "fine": [60000, 110500], "jail": [0, 150], "description": "A vizsgabázis olyan járműre állít ki engedélyt, mely nem felel meg az előírásoknak.", "abbreviation": "ÉFEK"},
+        {"category": "Mellékbüntetések", "id": "176", "name": "Fegyverengedéllyel való visszaélés", "fine": [0, 0], "jail": [0, 0], "description": "Bűncselekményhez köthetően a fegyverengedély bevonható.", "abbreviation": "FEVV"},
+        {"category": "Mellékbüntetések", "id": "177", "name": "Vezetői engedéllyel való visszaélés", "fine": [0, 0], "jail": [0, 0], "description": "Bűncselekményhez vagy súlyos vétséghez köthetően a vezetői engedély bevonható.", "abbreviation": "VEVV"},
+        {"category": "Mellékbüntetések", "id": "178.1", "name": "Kötelező bejelentés elmulasztása - Kés", "fine": [120000, 120000], "jail": [0, 0], "description": "Be nem jelentett engedélyköteles fegyver esetén 1 havi bejelentés összege + 50.000$ bírság.", "abbreviation": "KBEK"},
+        {"category": "Mellékbüntetések", "id": "178.2", "name": "Kötelező bejelentés elmulasztása - Colt-45", "fine": [160000, 160000], "jail": [0, 0], "description": "-", "abbreviation": "KBEC"},
+        {"category": "Mellékbüntetések", "id": "178.3", "name": "Kötelező bejelentés elmulasztása - Glock 17", "fine": [120000, 120000], "jail": [0, 0], "description": "-", "abbreviation": "KBE17"},
+        {"category": "Mellékbüntetések", "id": "178.4", "name": "Kötelező bejelentés elmulasztása - Glock 19", "fine": [170000, 170000], "jail": [0, 0], "description": "-", "abbreviation": "KBE19"},
+        {"category": "Mellékbüntetések", "id": "178.5", "name": "Kötelező bejelentés elmulasztása - Colt 1911", "fine": [145000, 145000], "jail": [0, 0], "description": "-", "abbreviation": "KBE11"},
+        {"category": "Mellékbüntetések", "id": "178.6", "name": "Kötelező bejelentés elmulasztása - HK USP 45", "fine": [150000, 150000], "jail": [0, 0], "description": "-", "abbreviation": "KBE45"},
+        {"category": "Mellékbüntetések", "id": "178.7", "name": "Kötelező bejelentés elmulasztása - Rendvédelmi engedély", "fine": [180000, 180000], "jail": [0, 0], "description": "-", "abbreviation": "KBERE"},
+        {"category": "Mellékbüntetések", "id": "179", "name": "Publikus Fegyverviselés", "fine": [100000, 150000], "jail": [0, 0], "description": "Engedélyköteles fegyverét nem rejtve viseli.", "abbreviation": "PFV"},
+        {"category": "Rendőrségi járműkiváltás", "id": "J1", "name": "Ügyintézési díj", "fine": [100000, 100000], "jail": [0, 0], "description": "-", "abbreviation": "J1"},
+        {"category": "Rendőrségi járműkiváltás", "id": "J2", "name": "Késedelmi pótlék 10 nap", "fine": [70000, 70000], "jail": [0, 0], "description": "10 napot túllépő tárolási költség.", "abbreviation": "J2"},
+        {"category": "Rendőrségi járműkiváltás", "id": "J3", "name": "Késedelmi pótlék 20 nap", "fine": [100000, 100000], "jail": [0, 0], "description": "20 napot túllépő tárolási költség.", "abbreviation": "J3"},
+        {"category": "Rendőrségi járműkiváltás", "id": "J4", "name": "Sürgősségi ügyintézési díj", "fine": [50000, 50000], "jail": [0, 0], "description": "Ügyintézési időn (16:00-20:00) kívüli kiváltás.", "abbreviation": "J4"},
+        {"category": "Rendőrségi járműkiváltás", "id": "J5", "name": "Sürgősségi ügyintézési díj (22-06)", "fine": [75000, 75000], "jail": [0, 0], "description": "22:00-06:00 közötti kiváltás.", "abbreviation": "J5"},
+        {"category": "Rendőrségi járműkiváltás", "id": "J6", "name": "Behajtási díj", "fine": [0, 0], "jail": [0, 0], "description": "A 4. napon a jármű behajtásra kerül.", "abbreviation": "J6"}
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const violationsContainer = document.getElementById('violations-container');
+        const searchInput = document.getElementById('search-input');
+        const summaryBar = document.getElementById('summary-bar');
+        const countEl = document.getElementById('count');
+        const totalFineEl = document.getElementById('total-fine');
+        const totalJailEl = document.getElementById('total-jail');
+        const fabContainer = document.getElementById('fab-container');
+        const fabMain = document.getElementById('fab-main');
+        const copyNamesBtn = document.getElementById('copy-names');
+        const copyFineBtn = document.getElementById('copy-fine');
+        const copyJailBtn = document.getElementById('copy-jail');
+        const copySummaryBtn = document.getElementById('copy-summary');
+        const headerContainer = document.getElementById('header-container');
+
+        let selectedViolations = new Set();
+        let lastScrollTop = 0;
+        
+        const MAX_JAIL = 90;
+        const MAX_FINE = 300000;
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.borderLeftColor = type === 'success' ? 'var(--success-color)' : (type === 'error' ? 'var(--error-color)' : 'var(--primary-color)');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                notification.classList.add('hide');
+                 setTimeout(() => {
+                    notification.classList.remove('hide');
+                }, 500);
+            }, 2500);
+        }
+
+        function renderViolations(filter = '') {
+            const fragment = document.createDocumentFragment();
+            const groupedData = violationsData.reduce((acc, vio) => {
+                acc[vio.category] = acc[vio.category] || [];
+                acc[vio.category].push(vio);
+                return acc;
+            }, {});
+
+            const lowerCaseFilter = filter.toLowerCase();
+
+            for (const category in groupedData) {
+                const filteredViolations = groupedData[category].filter(v => 
+                    v.name.toLowerCase().includes(lowerCaseFilter) || 
+                    v.id.toString().toLowerCase().includes(lowerCaseFilter) ||
+                    v.abbreviation.toLowerCase().includes(lowerCaseFilter) ||
+                    v.description.toLowerCase().includes(lowerCaseFilter)
+                );
+
+                if (filteredViolations.length > 0) {
+                    const categoryTitle = document.createElement('h2');
+                    categoryTitle.className = 'category-title';
+                    categoryTitle.textContent = category;
+                    fragment.appendChild(categoryTitle);
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'violations-grid';
+
+                    filteredViolations.forEach(v => {
+                        const card = document.createElement('div');
+                        card.className = 'violation-card';
+                        card.dataset.id = v.id;
+                        
+                        if(selectedViolations.has(v.id)) {
+                            card.classList.add('selected');
+                        }
+
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <h3>${v.name}</h3>
+                                <div class="ids">
+                                    <div class="para">§${v.id}</div>
+                                    <div class="abbreviation">${v.abbreviation || ''}</div>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <p><strong><i class="fas fa-dollar-sign"></i> Bírság:</strong> ${v.fine[0] > 0 || v.fine[1] > 0 ? `${formatCurrency(v.fine[0])} - ${formatCurrency(v.fine[1])}` : 'N/A'}</p>
+                                <p><strong><i class="fas fa-user-clock"></i> Letöltendő:</strong> ${v.jail[0] > 0 || v.jail[1] > 0 ? `${v.jail[0]}p - ${v.jail[1]}p` : 'N/A'}</p>
+                                ${v.description && v.description !== '-' ? `<p class="description">${v.description}</p>` : ''}
+                            </div>
+                        `;
+                        card.addEventListener('click', () => toggleSelection(v, card));
+                        grid.appendChild(card);
+                    });
+                    fragment.appendChild(grid);
+                }
+            }
+            violationsContainer.innerHTML = '';
+            violationsContainer.appendChild(fragment);
+        }
+
+        function toggleSelection(violation, cardElement) {
+            if (selectedViolations.has(violation.id)) {
+                selectedViolations.delete(violation.id);
+                cardElement.classList.remove('selected');
+                showNotification(`"${violation.name}" eltávolítva.`, 'error');
+            } else {
+                selectedViolations.add(violation.id);
+                cardElement.classList.add('selected');
+                showNotification(`"${violation.name}" hozzáadva.`, 'success');
+            }
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let totalMinFine = 0;
+            let totalMaxFine = 0;
+            let totalMinJail = 0;
+            let totalMaxJail = 0;
+
+            selectedViolations.forEach(id => {
+                const violation = violationsData.find(v => v.id === id);
+                if (violation) {
+                    totalMinFine += violation.fine[0];
+                    totalMaxFine += violation.fine[1];
+                    totalMinJail += violation.jail[0];
+                    totalMaxJail += violation.jail[1];
+                }
+            });
+            
+            const finalMaxFine = Math.min(totalMaxFine, MAX_FINE);
+            const finalMaxJail = Math.min(totalMaxJail, MAX_JAIL);
+            const finalMinFine = Math.min(totalMinFine, finalMaxFine);
+            const finalMinJail = Math.min(totalMinJail, finalMaxJail);
+
+            countEl.textContent = selectedViolations.size;
+            totalFineEl.textContent = `${formatCurrency(finalMinFine)} - ${formatCurrency(finalMaxFine)}`;
+            totalJailEl.textContent = `${finalMinJail}p - ${finalMaxJail}p`;
+
+            if (selectedViolations.size > 0) {
+                summaryBar.classList.add('visible');
+                fabContainer.classList.add('visible');
+            } else {
+                summaryBar.classList.remove('visible');
+                fabContainer.classList.remove('active');
+                fabContainer.classList.remove('visible');
+            }
+        }
+
+        function copyToClipboard(text, successMessage) {
+            if (!navigator.clipboard) {
+                showNotification('A másolás nem támogatott ebben a böngészőben.', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(successMessage, 'info');
+            }, (err) => {
+                showNotification('A másolás sikertelen!', 'error');
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            let st = window.pageYOffset || document.documentElement.scrollTop;
+            if (st > lastScrollTop && st > 150){
+                headerContainer.classList.add('hidden');
+            } else {
+                headerContainer.classList.remove('hidden');
+            }
+            lastScrollTop = st <= 0 ? 0 : st;
+        }, false);
+
+        fabMain.addEventListener('click', () => {
+            if (selectedViolations.size > 0) {
+                fabContainer.classList.toggle('active');
+            }
+        });
+
+        copyNamesBtn.addEventListener('click', () => {
+            const names = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).name).join(', ');
+            copyToClipboard(names, 'Tételek nevei a vágólapra másolva!');
+        });
+
+        copyFineBtn.addEventListener('click', () => {
+            copyToClipboard(totalFineEl.textContent, 'Bírság a vágólapra másolva!');
+        });
+
+        copyJailBtn.addEventListener('click', () => {
+            copyToClipboard(totalJailEl.textContent, 'Börtönidő a vágólapra másolva!');
+        });
+
+        copySummaryBtn.addEventListener('click', () => {
+            const abbreviations = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).abbreviation).filter(Boolean).join(', ');
+            const summaryText = `Tételek: ${abbreviations} | Bírság: ${totalFineEl.textContent} | Letöltendő: ${totalJailEl.textContent}`;
+            copyToClipboard(summaryText, 'Összegzés a vágólapra másolva!');
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            window.requestAnimationFrame(() => {
+                renderViolations(e.target.value);
+            });
+        });
+
+        renderViolations();
+    });
+    </script>
+</body>
+</html>
