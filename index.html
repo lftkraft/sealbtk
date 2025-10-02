@@ -327,53 +327,143 @@
             display: none;
         }
 
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal {
+            background-color: var(--card-background);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .modal-overlay.visible .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid var(--primary-color);
+            background-color: transparent;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .modal-button:hover {
+            background-color: var(--primary-color);
+            color: var(--card-background);
+        }
+
     </style>
 </head>
 <body>
-    <div class="header-container" id="header-container">
-        <div class="header-content">
-            <h1><i class="fas fa-gavel"></i> SealMTA BTK (nav)</h1>
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Keresés a tételek között (név, §, rövidítés)...">
-            </div>
+<div class="header-container" id="header-container">
+    <div class="header-content">
+        <h1><i class="fas fa-gavel"></i> SealMTA BTK (nav)</h1>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Keresés a tételek között (név, §, rövidítés)...">
         </div>
     </div>
+</div>
 
-    <div class="container" id="main-container">
-        <div id="violations-container"></div>
-    </div>
+<div class="container" id="main-container">
+    <div id="violations-container"></div>
+</div>
 
-    <div class="summary-bar" id="summary-bar">
-        <div class="summary-content">
-            <div class="summary-item">
-                <h4><i class="fas fa-list-ol"></i> Kiválasztott tételek</h4>
-                <p id="count">0</p>
-            </div>
-            <div class="summary-item">
-                <h4><i class="fas fa-dollar-sign"></i> Bírság (Min-Max)</h4>
-                <p id="total-fine">$0 - $0</p>
-            </div>
-            <div class="summary-item">
-                <h4><i class="fas fa-user-clock"></i> Letöltendő (Min-Max)</h4>
-                <p id="total-jail">0p - 0p</p>
-            </div>
+<div class="summary-bar" id="summary-bar">
+    <div class="summary-content">
+        <div class="summary-item">
+            <h4><i class="fas fa-list-ol"></i> Kiválasztott tételek</h4>
+            <p id="count">0</p>
+        </div>
+        <div class="summary-item">
+            <h4><i class="fas fa-dollar-sign"></i> Bírság (Min-Max)</h4>
+            <p id="total-fine">$0 - $0</p>
+        </div>
+        <div class="summary-item">
+            <h4><i class="fas fa-user-clock"></i> Letöltendő (Min-Max)</h4>
+            <p id="total-jail">0p - 0p</p>
         </div>
     </div>
-    
-    <div id="notification" class="notification-box"></div>
+</div>
 
-    <div class="fab-container" id="fab-container">
-        <div class="fab-actions">
-            <button class="fab-action" id="copy-summary" title="Összegzés másolása"><i class="fas fa-clipboard-check"></i></button>
-            <button class="fab-action" id="copy-jail" title="Börtönidő másolása"><i class="fas fa-user-clock"></i></button>
-            <button class="fab-action" id="copy-fine" title="Bírság másolása"><i class="fas fa-dollar-sign"></i></button>
-            <button class="fab-action" id="copy-names" title="Tételek másolása"><i class="fas fa-list-alt"></i></button>
-        </div>
-        <button class="fab" id="fab-main"><i class="fas fa-plus"></i></button>
+<div id="notification" class="notification-box"></div>
+
+<div class="fab-container" id="fab-container">
+    <div class="fab-actions">
+        <button class="fab-action" id="copy-summary" title="Összegzés másolása"><i class="fas fa-clipboard-check"></i></button>
+        <button class="fab-action" id="copy-jail" title="Börtönidő másolása"><i class="fas fa-user-clock"></i></button>
+        <button class="fab-action" id="copy-fine" title="Bírság másolása"><i class="fas fa-dollar-sign"></i></button>
+        <button class="fab-action" id="copy-names" title="Tételek másolása"><i class="fas fa-list-alt"></i></button>
     </div>
+    <button class="fab" id="fab-main"><i class="fas fa-plus"></i></button>
+</div>
 
-    <script>
+<div class="modal-overlay" id="copy-modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Másolás típusa</h2>
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <button class="modal-button" id="copy-short">Rövidített</button>
+            <button class="modal-button" id="copy-full">Normál</button>
+        </div>
+    </div>
+</div>
+
+<script>
     const violationsData = [
         {"category": "Közlekedési szabálysértések", "id": "1", "name": "Forgalom feltartása", "fine": [8400, 18200], "jail": [0, 0], "description": "Forgalom Feltartásának minősül minden olyan cselekedet mely az úttest valamely forgalmi sávjában történő egyenletes haladást, vagy előzést indokolatlanul hátráltatja vagy megakadályozza.", "abbreviation": "FF"},
         {"category": "Közlekedési szabálysértések", "id": "2", "name": "Gondatlan vezetés", "fine": [10800, 15600], "jail": [0, 0], "description": "Aki a közúti közlekedés szabályainak megszegésével közúton vagy közforgalom elől el nem zárt magánúton más vagy mások életét vagy testi épségét veszélynek tenné ki, viszont az adott helyzetben ez a forgalom sűrűsége vagy bármilyen egyéb ok miatt nem áll fent. Nem osztható együtt a 'Közúti veszélyeztetés' tétellel.", "abbreviation": "GV"},
@@ -680,17 +770,21 @@
         const copyJailBtn = document.getElementById('copy-jail');
         const copySummaryBtn = document.getElementById('copy-summary');
         const headerContainer = document.getElementById('header-container');
+        const copyModalOverlay = document.getElementById('copy-modal-overlay');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const copyShortBtn = document.getElementById('copy-short');
+        const copyFullBtn = document.getElementById('copy-full');
 
         let selectedViolations = new Set();
         let lastScrollTop = 0;
-        
+
         const MAX_JAIL = 90;
         const MAX_FINE = 300000;
 
         function formatCurrency(value) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
         }
-        
+
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -716,8 +810,8 @@
             const lowerCaseFilter = filter.toLowerCase();
 
             for (const category in groupedData) {
-                const filteredViolations = groupedData[category].filter(v => 
-                    v.name.toLowerCase().includes(lowerCaseFilter) || 
+                const filteredViolations = groupedData[category].filter(v =>
+                    v.name.toLowerCase().includes(lowerCaseFilter) ||
                     v.id.toString().toLowerCase().includes(lowerCaseFilter) ||
                     v.abbreviation.toLowerCase().includes(lowerCaseFilter) ||
                     v.description.toLowerCase().includes(lowerCaseFilter)
@@ -728,7 +822,7 @@
                     categoryTitle.className = 'category-title';
                     categoryTitle.textContent = category;
                     fragment.appendChild(categoryTitle);
-                    
+
                     const grid = document.createElement('div');
                     grid.className = 'violations-grid';
 
@@ -736,7 +830,7 @@
                         const card = document.createElement('div');
                         card.className = 'violation-card';
                         card.dataset.id = v.id;
-                        
+
                         if(selectedViolations.has(v.id)) {
                             card.classList.add('selected');
                         }
@@ -793,7 +887,7 @@
                     totalMaxJail += violation.jail[1];
                 }
             });
-            
+
             const finalMaxFine = Math.min(totalMaxFine, MAX_FINE);
             const finalMaxJail = Math.min(totalMaxJail, MAX_JAIL);
             const finalMinFine = Math.min(totalMinFine, finalMaxFine);
@@ -825,6 +919,14 @@
             });
         }
 
+        function showCopyModal() {
+            copyModalOverlay.classList.add('visible');
+        }
+
+        function hideCopyModal() {
+            copyModalOverlay.classList.remove('visible');
+        }
+
         window.addEventListener('scroll', () => {
             let st = window.pageYOffset || document.documentElement.scrollTop;
             if (st > lastScrollTop && st > 150){
@@ -841,10 +943,7 @@
             }
         });
 
-        copyNamesBtn.addEventListener('click', () => {
-            const names = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).name).join(', ');
-            copyToClipboard(names, 'Tételek nevei a vágólapra másolva!');
-        });
+        copyNamesBtn.addEventListener('click', showCopyModal);
 
         copyFineBtn.addEventListener('click', () => {
             copyToClipboard(totalFineEl.textContent, 'Bírság a vágólapra másolva!');
@@ -866,9 +965,27 @@
             });
         });
 
+        modalCloseBtn.addEventListener('click', hideCopyModal);
+        copyModalOverlay.addEventListener('click', (e) => {
+            if (e.target === copyModalOverlay) {
+                hideCopyModal();
+            }
+        });
+
+        copyShortBtn.addEventListener('click', () => {
+            const abbreviations = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).abbreviation).filter(Boolean).join(', ');
+            copyToClipboard(abbreviations, 'Rövidített nevek a vágólapra másolva!');
+            hideCopyModal();
+        });
+
+        copyFullBtn.addEventListener('click', () => {
+            const names = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).name).join(', ');
+            copyToClipboard(names, 'Teljes nevek a vágólapra másolva!');
+            hideCopyModal();
+        });
+
         renderViolations();
     });
-    </script>
+</script>
 </body>
 </html>
-
