@@ -31,12 +31,13 @@
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 8rem 2rem 2rem 2rem;
+            padding: 10rem 2rem 2rem 2rem;
         }
 
         .header-container {
@@ -48,29 +49,43 @@
             backdrop-filter: blur(10px);
             z-index: 100;
             padding: 1rem 0;
-            transition: transform 0.4s ease-in-out;
+            transition: opacity 0.4s ease-in-out;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 1;
         }
 
         .header-container.hidden {
-            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
         }
         
         .header-content {
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
         }
 
         .header-container h1 {
             font-size: 2rem;
             color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 1rem;
+        }
+
+        .search-bar-wrapper {
+             padding: 0 2rem; max-width: 1400px; margin: 1rem auto 0 auto;
         }
 
         .search-bar {
             position: relative;
+            width: 100%;
         }
 
         .search-bar input {
@@ -229,7 +244,7 @@
             border-radius: 5px;
             border-left: 5px solid var(--primary-color);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 200;
+            z-index: 1000;
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.5s ease-in-out;
@@ -318,13 +333,15 @@
             transform: scale(1);
         }
         
-        .fab-container.active .fab-action:nth-child(1) { transition-delay: 0.3s; }
-        .fab-container.active .fab-action:nth-child(2) { transition-delay: 0.2s; }
-        .fab-container.active .fab-action:nth-child(3) { transition-delay: 0.1s; }
-        .fab-container.active .fab-action:nth-child(4) { transition-delay: 0s; }
+        .fab-container.active .fab-action:nth-child(1) { transition-delay: 0.5s; }
+        .fab-container.active .fab-action:nth-child(2) { transition-delay: 0.4s; }
+        .fab-container.active .fab-action:nth-child(3) { transition-delay: 0.3s; }
+        .fab-container.active .fab-action:nth-child(4) { transition-delay: 0.2s; }
+        .fab-container.active .fab-action:nth-child(5) { transition-delay: 0.1s; }
+        .fab-container.active .fab-action:nth-child(6) { transition-delay: 0s; }
 
         .hidden-by-filter {
-            display: none;
+            display: none !important;
         }
 
         .modal-overlay {
@@ -433,12 +450,174 @@
             border-color: #2980b9;
         }
 
+        .cookie-banner {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--secondary-color);
+            padding: 1rem;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+            z-index: 300;
+            transition: bottom 0.5s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cookie-banner.visible {
+            bottom: 0;
+        }
+
+        #accept-cookies {
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #favorites-modal .modal-body, #save-favorite-modal .modal-body {
+            flex-direction: column;
+        }
+
+        #favorite-name-input {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--background-color);
+            border: 1px solid var(--secondary-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        #favorites-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 1rem; 
+        }
+
+        .favorite-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--background-color);
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .favorite-item-name {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .favorite-item-actions button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .favorite-item-actions button:hover {
+            color: var(--error-color);
+        }
+
+        #view-favorites-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        #view-favorites-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .release-notes-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background-color: var(--card-background);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            z-index: 1001;
+            transition: right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .release-notes-panel.visible {
+            right: 0;
+        }
+
+        .release-notes-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .release-notes-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .release-notes-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .release-notes-body h3 {
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        .release-notes-body ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .release-notes-body li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .release-notes-body li i {
+            color: var(--primary-color);
+            margin-right: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .release-notes-body li strong {
+            margin-right: 0.5rem;
+        }
+
+        .release-notes-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--secondary-color);
+        }
+
         @media (max-width: 768px) {
             .container {
-                padding: 7rem 1rem 1rem 1rem;
+                padding: 10rem 1rem 1rem 1rem;
             }
 
-            .header-content {
+            .header-content, .search-bar-wrapper {
                 padding: 0 1rem;
             }
 
@@ -497,6 +676,14 @@
                 font-size: 1.5rem;
             }
 
+            .header-content {
+                flex-direction: row;
+            }
+
+            .search-bar-wrapper {
+                padding: 0 1rem;
+            }
+
             .search-bar input {
                 padding: 0.8rem 0.8rem 0.8rem 3rem;
                 font-size: 1rem;
@@ -523,6 +710,15 @@
                 right: 5%;
                 top: 1rem;
             }
+
+            .cookie-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .release-notes-panel {
+                max-width: 100%;
+            }
         }
 
     </style>
@@ -530,7 +726,10 @@
 <body>
 <div class="header-container" id="header-container">
     <div class="header-content">
-        <h1><i class="fas fa-gavel"></i> SealMTA BTK (nav)</h1>
+        <h1><i class="fas fa-gavel"></i> SealMTA BTK</h1>
+        <button id="view-favorites-btn" title="Kedvencek megtekintése"><i class="fas fa-star"></i></button>
+    </div>
+    <div class="search-bar-wrapper">
         <div class="search-bar">
             <i class="fas fa-search"></i>
             <input type="text" id="search-input" placeholder="Keresés a tételek között (név, §, rövidítés)...">
@@ -563,6 +762,8 @@
 
 <div class="fab-container" id="fab-container">
     <div class="fab-actions">
+        <button class="fab-action" id="clear-selection" title="Kijelölés törlése"><i class="fas fa-trash"></i></button>
+        <button class="fab-action" id="save-favorite" title="Mentés kedvencként"><i class="fas fa-save"></i></button>
         <button class="fab-action" id="copy-summary" title="Összegzés másolása"><i class="fas fa-clipboard-check"></i></button>
         <button class="fab-action" id="copy-jail" title="Börtönidő másolása"><i class="fas fa-user-clock"></i></button>
         <button class="fab-action" id="copy-fine" title="Bírság másolása"><i class="fas fa-dollar-sign"></i></button>
@@ -575,12 +776,62 @@
     <div class="modal">
         <div class="modal-header">
             <h2><i class="fas fa-copy"></i> Másolás típusa</h2>
-            <button class="modal-close" id="modal-close-btn">&times;</button>
+            <button class="modal-close" id="copy-modal-close-btn">&times;</button>
         </div>
         <div class="modal-body">
             <button class="modal-button" id="copy-short"><i class="fas fa-compress-alt"></i> Rövidített</button>
             <button class="modal-button" id="copy-full"><i class="fas fa-expand-alt"></i> Normál</button>
         </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="save-favorite-modal-overlay">
+    <div class="modal" id="save-favorite-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-save"></i> Kedvenc mentése</h2>
+            <button class="modal-close" id="save-favorite-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="favorite-name-input" placeholder="Kedvenc neve...">
+            <button class="modal-button" id="save-favorite-confirm-btn">Mentés</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="favorites-modal-overlay">
+    <div class="modal" id="favorites-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-star"></i> Kedvencek</h2>
+            <button class="modal-close" id="favorites-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="favorites-list"></div>
+        </div>
+    </div>
+</div>
+
+<div class="cookie-banner" id="cookie-banner">
+    <p>Ez a weboldal cookie-kat használ a funkciók (pl. kedvencek mentése) működéséhez.</p>
+    <button id="accept-cookies">Elfogadom</button>
+</div>
+
+<div class="release-notes-panel" id="release-notes-panel">
+    <div class="release-notes-header">
+        <h2><i class="fas fa-rocket"></i> Frissítések</h2>
+        <button class="modal-close" id="release-notes-close-btn">&times;</button>
+    </div>
+    <div class="release-notes-body">
+        <h3>Verzió 1.1 Újdonságai</h3>
+        <ul>
+            <li><i class="fas fa-star"></i><strong>Kedvencek:</strong> Mostantól elmentheted a gyakran használt tétel-kombinációkat, hogy később egy kattintással betölthesd őket.</li>
+            <li><i class="fas fa-trash"></i><strong>Kijelölés Törlése:</strong> A lebegő menüben egy új gombbal azonnal törölheted az összes kiválasztott tételt.</li>
+            <li><i class="fas fa-magic"></i><strong>Animációk:</strong> Visszatért a görgetésre finoman eltűnő és megjelenő fejléc animációja.</li>
+            <li><i class="fas fa-cookie-bite"></i><strong>Cookie Kezelés:</strong> Az oldal cookie-kat használ a kedvencek és a beállítások mentéséhez.</li>
+            <li><i class="fas fa-wrench"></i><strong>Általános Javítások:</strong> Kisebb hibajavítások és a teljesítmény optimalizálása a gördülékenyebb használatért.</li>
+        </ul>
+    </div>
+    <div class="release-notes-footer">
+        <button class="modal-button" id="release-notes-ok-btn">Értettem</button>
     </div>
 </div>
 
@@ -716,7 +967,6 @@
         {"category": "Bűncselekmények", "id": "80.2", "name": "Illegális töltény birtoklás - Egyéb", "fine": [48000, 91000], "jail": [40, 60], "description": "-", "abbreviation": "ITBE"},
         {"category": "Bűncselekmények", "id": "81.1", "name": "Illegális töltény árusítás - 9x19mm, .45 ACP", "fine": [24000, 78000], "jail": [45, 75], "description": "Aki illegális vagy engedélyköteles töltényt árusít.", "abbreviation": "ITÁK"},
         {"category": "Bűncselekmények", "id": "81.2", "name": "Illegális töltény árusítás - Egyéb", "fine": [48000, 97500], "jail": [50, 90], "description": "-", "abbreviation": "ITÁE"},
-        {"category": "Bűncselekmények", "id": "82.0", "name": "Illegális fegyver birtoklás", "fine": [48000, 52000], "jail": [30, 30], "description": "Illegális vagy engedélyköteles fegyver birtoklása", "abbreviation": "IFB"},
         {"category": "Bűncselekmények", "id": "82.1", "name": "Illegális fegyver birtoklás - Kézifegyver", "fine": [48000, 52000], "jail": [30, 30], "description": "Illegális vagy engedélyköteles fegyver birtoklása engedély nélkül (kés, vipera, boxer, stb.).", "abbreviation": "IFBKF"},
         {"category": "Bűncselekmények", "id": "82.2", "name": "Illegális fegyver birtoklás - Engedélyköteles fegyverek", "fine": [72000, 78000], "jail": [60, 60], "description": "Engedélyköteles maroklőfegyver birtoklása engedély nélkül.", "abbreviation": "IFBK"},
         {"category": "Bűncselekmények", "id": "82.3", "name": "Illegális fegyver birtoklás - Egyéb fegyver", "fine": [144000, 156000], "jail": [80, 80], "description": "Minden egyéb, nem részletezett fegyvertípus.", "abbreviation": "IFBE"},
@@ -892,16 +1142,59 @@
         const copyJailBtn = document.getElementById('copy-jail');
         const copySummaryBtn = document.getElementById('copy-summary');
         const headerContainer = document.getElementById('header-container');
+        
         const copyModalOverlay = document.getElementById('copy-modal-overlay');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const copyModalCloseBtn = document.getElementById('copy-modal-close-btn');
         const copyShortBtn = document.getElementById('copy-short');
         const copyFullBtn = document.getElementById('copy-full');
+
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptCookiesBtn = document.getElementById('accept-cookies');
+
+        const clearSelectionBtn = document.getElementById('clear-selection');
+        const saveFavoriteBtn = document.getElementById('save-favorite');
+        const viewFavoritesBtn = document.getElementById('view-favorites-btn');
+
+        const saveFavoriteModalOverlay = document.getElementById('save-favorite-modal-overlay');
+        const saveFavoriteCloseBtn = document.getElementById('save-favorite-close-btn');
+        const saveFavoriteConfirmBtn = document.getElementById('save-favorite-confirm-btn');
+        const favoriteNameInput = document.getElementById('favorite-name-input');
+
+        const favoritesModalOverlay = document.getElementById('favorites-modal-overlay');
+        const favoritesCloseBtn = document.getElementById('favorites-close-btn');
+        const favoritesList = document.getElementById('favorites-list');
+
+        const releaseNotesPanel = document.getElementById('release-notes-panel');
+        const releaseNotesCloseBtn = document.getElementById('release-notes-close-btn');
+        const releaseNotesOkBtn = document.getElementById('release-notes-ok-btn');
 
         let selectedViolations = new Set();
         let lastScrollTop = 0;
 
         const MAX_JAIL = 90;
         const MAX_FINE = 300000;
+        const CURRENT_RELEASE_NOTES_VERSION = '1.1';
+
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
 
         function formatCurrency(value) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
@@ -923,13 +1216,14 @@
 
         function renderViolations(filter = '') {
             const fragment = document.createDocumentFragment();
+            const lowerCaseFilter = filter.toLowerCase();
+            violationsContainer.innerHTML = '';
+
             const groupedData = violationsData.reduce((acc, vio) => {
                 acc[vio.category] = acc[vio.category] || [];
                 acc[vio.category].push(vio);
                 return acc;
             }, {});
-
-            const lowerCaseFilter = filter.toLowerCase();
 
             for (const category in groupedData) {
                 const filteredViolations = groupedData[category].filter(v =>
@@ -971,25 +1265,22 @@
                                 ${v.description && v.description !== '-' ? `<p class="description">${v.description}</p>` : ''}
                             </div>
                         `;
-                        card.addEventListener('click', () => toggleSelection(v, card));
+                        card.addEventListener('click', () => toggleSelection(v.id, card));
                         grid.appendChild(card);
                     });
                     fragment.appendChild(grid);
                 }
             }
-            violationsContainer.innerHTML = '';
             violationsContainer.appendChild(fragment);
         }
 
-        function toggleSelection(violation, cardElement) {
-            if (selectedViolations.has(violation.id)) {
-                selectedViolations.delete(violation.id);
+        function toggleSelection(violationId, cardElement) {
+            if (selectedViolations.has(violationId)) {
+                selectedViolations.delete(violationId);
                 cardElement.classList.remove('selected');
-                showNotification(`"${violation.name}" eltávolítva.`, 'error');
             } else {
-                selectedViolations.add(violation.id);
+                selectedViolations.add(violationId);
                 cardElement.classList.add('selected');
-                showNotification(`"${violation.name}" hozzáadva.`, 'success');
             }
             updateSummary();
         }
@@ -1041,17 +1332,98 @@
             });
         }
 
-        function showCopyModal() {
-            copyModalOverlay.classList.add('visible');
+        function handleCookieConsent() {
+            if (getCookie('cookie_consent')) {
+                handleReleaseNotes();
+            } else {
+                cookieBanner.classList.add('visible');
+            }
+
+            acceptCookiesBtn.addEventListener('click', () => {
+                setCookie('cookie_consent', 'true', 365);
+                cookieBanner.classList.remove('visible');
+                handleReleaseNotes();
+            });
         }
 
-        function hideCopyModal() {
-            copyModalOverlay.classList.remove('visible');
+        function handleReleaseNotes() {
+            if (getCookie('seen_release_notes_version') !== CURRENT_RELEASE_NOTES_VERSION) {
+                releaseNotesPanel.classList.add('visible');
+            }
         }
+
+        function closeReleaseNotes() {
+            releaseNotesPanel.classList.remove('visible');
+            setCookie('seen_release_notes_version', CURRENT_RELEASE_NOTES_VERSION, 365);
+        }
+
+        function clearSelection() {
+            selectedViolations.clear();
+            document.querySelectorAll('.violation-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateSummary();
+            showNotification('Kijelölés törölve.', 'info');
+        }
+
+        function showModal(overlay) {
+            overlay.classList.add('visible');
+        }
+
+        function hideModal(overlay) {
+            overlay.classList.remove('visible');
+        }
+
+        function renderFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            favoritesList.innerHTML = '';
+
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Nincsenek mentett kedvencek.</p>';
+                return;
+            }
+
+            favorites.forEach((fav, index) => {
+                const item = document.createElement('div');
+                item.className = 'favorite-item';
+                
+                const name = document.createElement('span');
+                name.className = 'favorite-item-name';
+                name.textContent = fav.name;
+                name.onclick = () => {
+                    clearSelection();
+                    fav.ids.forEach(id => selectedViolations.add(id));
+                    renderViolations();
+                    updateSummary();
+                    hideModal(favoritesModalOverlay);
+                    showNotification(`"${fav.name}" betöltve.`, 'success');
+                };
+
+                const actions = document.createElement('div');
+                actions.className = 'favorite-item-actions';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.title = 'Törlés';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    favorites.splice(index, 1);
+                    localStorage.setItem('favorites', JSON.stringify(favorites));
+                    renderFavorites();
+                    showNotification('Kedvenc törölve.', 'error');
+                };
+
+                actions.appendChild(deleteBtn);
+                item.appendChild(name);
+                item.appendChild(actions);
+                favoritesList.appendChild(item);
+            });
+        }
+
 
         window.addEventListener('scroll', () => {
             let st = window.pageYOffset || document.documentElement.scrollTop;
-            if (st > lastScrollTop && st > 150){
+            if (st > lastScrollTop && st > headerContainer.offsetHeight){
                 headerContainer.classList.add('hidden');
             } else {
                 headerContainer.classList.remove('hidden');
@@ -1065,7 +1437,73 @@
             }
         });
 
-        copyNamesBtn.addEventListener('click', showCopyModal);
+        searchInput.addEventListener('input', (e) => {
+            window.requestAnimationFrame(() => {
+                renderViolations(e.target.value);
+            });
+        });
+
+
+        copyNamesBtn.addEventListener('click', () => showModal(copyModalOverlay));
+        copyModalCloseBtn.addEventListener('click', () => hideModal(copyModalOverlay));
+        copyModalOverlay.addEventListener('click', (e) => {
+            if (e.target === copyModalOverlay) hideModal(copyModalOverlay);
+        });
+
+        saveFavoriteBtn.addEventListener('click', () => {
+             if (selectedViolations.size === 0) {
+                showNotification('Nincsenek kiválasztott tételek a mentéshez!', 'error');
+                return;
+            }
+            showModal(saveFavoriteModalOverlay)
+        });
+        saveFavoriteCloseBtn.addEventListener('click', () => hideModal(saveFavoriteModalOverlay));
+        saveFavoriteModalOverlay.addEventListener('click', (e) => {
+            if (e.target === saveFavoriteModalOverlay) hideModal(saveFavoriteModalOverlay);
+        });
+
+        viewFavoritesBtn.addEventListener('click', () => {
+            renderFavorites();
+            showModal(favoritesModalOverlay);
+        });
+        favoritesCloseBtn.addEventListener('click', () => hideModal(favoritesModalOverlay));
+        favoritesModalOverlay.addEventListener('click', (e) => {
+            if (e.target === favoritesModalOverlay) hideModal(favoritesModalOverlay);
+        });
+
+        releaseNotesCloseBtn.addEventListener('click', closeReleaseNotes);
+        releaseNotesOkBtn.addEventListener('click', closeReleaseNotes);
+
+
+        clearSelectionBtn.addEventListener('click', clearSelection);
+
+        saveFavoriteConfirmBtn.addEventListener('click', () => {
+            const name = favoriteNameInput.value.trim();
+            if (!name) {
+                showNotification('A kedvencnek nevet kell adni!', 'error');
+                return;
+            }
+
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            favorites.push({ name: name, ids: Array.from(selectedViolations) });
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+
+            favoriteNameInput.value = '';
+            hideModal(saveFavoriteModalOverlay);
+            showNotification(`"${name}" kedvenc elmentve.`, 'success');
+        });
+
+        copyShortBtn.addEventListener('click', () => {
+            const abbreviations = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).abbreviation).filter(Boolean).join(', ');
+            copyToClipboard(abbreviations, 'Rövidített nevek a vágólapra másolva!');
+            hideModal(copyModalOverlay);
+        });
+
+        copyFullBtn.addEventListener('click', () => {
+            const names = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).name).join(', ');
+            copyToClipboard(names, 'Teljes nevek a vágólapra másolva!');
+            hideModal(copyModalOverlay);
+        });
 
         copyFineBtn.addEventListener('click', () => {
             copyToClipboard(totalFineEl.textContent, 'Bírság a vágólapra másolva!');
@@ -1081,34 +1519,20 @@
             copyToClipboard(summaryText, 'Összegzés a vágólapra másolva!');
         });
 
-        searchInput.addEventListener('input', (e) => {
-            window.requestAnimationFrame(() => {
-                renderViolations(e.target.value);
-            });
-        });
-
-        modalCloseBtn.addEventListener('click', hideCopyModal);
-        copyModalOverlay.addEventListener('click', (e) => {
-            if (e.target === copyModalOverlay) {
-                hideCopyModal();
-            }
-        });
-
-        copyShortBtn.addEventListener('click', () => {
-            const abbreviations = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).abbreviation).filter(Boolean).join(', ');
-            copyToClipboard(abbreviations, 'Rövidített nevek a vágólapra másolva!');
-            hideCopyModal();
-        });
-
-        copyFullBtn.addEventListener('click', () => {
-            const names = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).name).join(', ');
-            copyToClipboard(names, 'Teljes nevek a vágólapra másolva!');
-            hideCopyModal();
-        });
-
         renderViolations();
+        handleCookieConsent();
+        updateSummary();
     });
 </script>
 </body>
 </html>
+ a vágólapra másolva!');
+        });
 
+        renderViolations();
+        handleCookieConsent();
+        updateSummary();
+    });
+</script>
+</body>
+</html>
