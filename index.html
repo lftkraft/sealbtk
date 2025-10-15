@@ -277,7 +277,7 @@
             border-radius: 5px;
             border-left: 5px solid var(--primary-color);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 2000; /* Must be on top of modals */
+            z-index: 2000; 
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.5s ease-in-out;
@@ -657,7 +657,6 @@
             display: none;
         }
 
-        /* Notes Modal Styles */
         #notes-modal-overlay .modal {
             max-width: 800px;
             height: 70vh;
@@ -674,7 +673,7 @@
         }
 
         .notes-list-container {
-            flex: 0 0 280px; /* Fix width for the list */
+            flex: 0 0 280px;
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--secondary-color);
@@ -783,7 +782,6 @@
             border-color: var(--primary-color);
         }
 
-        /* Codes Modal Styles */
         #codes-modal-overlay .modal {
             max-width: 600px;
             height: 70vh;
@@ -791,12 +789,11 @@
             flex-direction: column;
         }
 
-        .codes-list-container {
+        #codes-list {
             flex-grow: 1;
             overflow-y: auto;
             margin-top: 1rem;
         }
-        #codes-list {}
 
         .code-item {
             display: flex;
@@ -821,7 +818,6 @@
             flex-basis: 75%;
         }
 
-        /* Timers Modal Styles */
         #timers-modal-overlay .modal {
             max-width: 600px;
             height: 70vh;
@@ -927,7 +923,6 @@
             color: var(--warning-color);
         }
 
-        /* Settings Modal */
         #settings-modal-overlay .modal {
             max-width: 700px;
         }
@@ -988,7 +983,6 @@
             color: var(--card-background);
         }
 
-        /* Custom Scrollbar Styles */
         ::-webkit-scrollbar {
             width: 12px;
         }
@@ -998,11 +992,7 @@
             border-radius: 10px;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background-color: var(--secondary-color);
-            border-radius: 10px;
-            border: 3px solid var(--card-background);
-        }
+        ::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 10px; border: 3px solid var(--card-background); }
 
         ::-webkit-scrollbar-thumb:hover {
             background-color: var(--primary-color);
@@ -1203,7 +1193,6 @@
     <button class="fab" id="fab-main"><i class="fas fa-plus"></i></button>
 </div>
 
-<!-- Modals -->
 <div class="modal-overlay" id="copy-modal-overlay">
     <div class="modal">
         <div class="modal-header">
@@ -1369,7 +1358,6 @@
 </div>
 
 <script>
-    // Wrap everything in a try-catch to prevent site-wide failure
     try {
         const violationsData = [
             {"category": "Közlekedési szabálysértések", "id": "1", "name": "Forgalom feltartása", "fine": [8400, 18200], "jail": [0, 0], "description": "Forgalom Feltartásának minősül minden olyan cselekedet mely az úttest valamely forgalmi sávjában történő egyenletes haladást, vagy előzést indokolatlanul hátráltatja vagy megakadályozza.", "abbreviation": "FF"},
@@ -1684,7 +1672,6 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Element Selectors ---
             const violationsContainer = document.getElementById('violations-container');
             const searchInput = document.getElementById('search-input');
             const summaryBar = document.getElementById('summary-bar');
@@ -1735,7 +1722,6 @@
             const releaseNotesCloseBtn = document.getElementById('release-notes-close-btn');
             const releaseNotesOkBtn = document.getElementById('release-notes-ok-btn');
 
-            // --- State & Constants ---
             let selectedViolations = new Set();
             let lastScrollTop = 0;
             let notes = [];
@@ -1750,7 +1736,6 @@
             const CURRENT_RELEASE_NOTES_VERSION = '1.2';
             const LOCAL_STORAGE_KEYS = ['favorites', 'notes', 'timers', 'theme', 'cookie_consent', 'seen_release_notes_version'];
 
-            // --- Generic Helper Functions ---
             console.log("BTK script inicializálása...");
 
             function setStorage(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
@@ -1788,7 +1773,6 @@
             function showReleaseNotesIfNeeded() {
                 const seenVersion = getStorage('seen_release_notes_version');
                 if (seenVersion !== CURRENT_RELEASE_NOTES_VERSION) {
-                    // Show only the current version's notes
                     document.querySelectorAll('.release-notes-version').forEach(el => {
                         el.style.display = 'none';
                     });
@@ -1804,7 +1788,6 @@
                 if (cookieBanner && !getStorage('cookie_consent')) cookieBanner.classList.add('visible');
             }
 
-            // --- Btk Functions ---
             function renderViolations(filter = '') {
                 const fragment = document.createDocumentFragment();
                 const lowerCaseFilter = filter.toLowerCase();
@@ -1934,7 +1917,6 @@
                 showNotification('Kijelölés törölve.', 'info');
             }
 
-            // --- Favorites Functions ---
             function renderFavorites() {
                 const favorites = getStorage('favorites') || [];
                 favoritesList.innerHTML = '';
@@ -1981,7 +1963,6 @@
                 });
             }
 
-            // --- Notes Functions ---
             function saveNotes() { setStorage('notes', notes); }
             function loadNotes() {
                 notes = getStorage('notes') || [];
@@ -2027,7 +2008,7 @@
                     noteTitleInput.value = note.title;
                     noteContentInput.value = note.content;
                 }
-                renderNotesList(); // To update active state
+                renderNotesList(); 
             }
 
             function handleNewNoteClick() {
@@ -2062,7 +2043,7 @@
                         note.content = content;
                     }
                 } else {
-                    if (!title && !content) return; // Don't save empty new note
+                    if (!title && !content) return;
                     const newNote = {
                         id: Date.now(),
                         title: title || 'Névtelen jegyzet',
@@ -2084,7 +2065,6 @@
                 }, 1000);
             }
 
-            // --- Radio Codes Functions ---
             function renderRadioCodes(filter = '') {
                 codesList.innerHTML = '';
                 const lowerCaseFilter = filter.toLowerCase();
@@ -2109,7 +2089,6 @@
                 });
             }
 
-            // --- Timers Functions ---
             function loadTimers() {
                 timers = getStorage('timers') || [];
                 if (timers.some(t => t.endTime - Date.now() > 0 || !t.acknowledged)) {
@@ -2226,7 +2205,6 @@
                 newTimerForm.reset();
             }
 
-            // --- Settings Functions ---
             function applyTheme(theme) {
                 document.body.className = `theme-${theme}`;
                 setStorage('theme', theme);
@@ -2275,13 +2253,12 @@
                         showNotification('Hiba a fájl beolvasása közben. Érvénytelen formátum.', 'error');
                     }
                 };
-                reader.readAsText(file);
-                importFileInput.value = ''; // Reset for next import
+            reader.readAsText(file);
+            importFileInput.value = '';
             }
 
             function handleDeleteData() {
                 if (confirm('FIGYELEM! Biztosan törölni akarja az ÖSSZES elmentett adatát (kedvencek, jegyzetek, időzítők, beállítások)? Ez a művelet nem vonható vissza.')) {
-                    stopAlarm();
                     LOCAL_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
                     showNotification('Minden adat törölve! Az oldal újratöltődik.', 'error');
                     setTimeout(() => window.location.reload(), 1500);
@@ -2291,15 +2268,11 @@
             function handleAcceptCookies() {
                 const cookieBanner = document.getElementById('cookie-banner');
                 cookieBanner.classList.remove('visible');
-                setStorage('cookie_consent', true);
-                // Show release notes for the first time after accepting cookies
-                showReleaseNotesIfNeeded();
+                setStorage('cookie_consent', true); showReleaseNotesIfNeeded();
             }
 
-            // --- Initialisation and Event Listeners ---
             function init() {
                 console.log("init() függvény lefut.");
-                // Modals
                 document.querySelectorAll('[data-close-modal]').forEach(btn => {
                     btn.addEventListener('click', () => {
                         const modalOverlay = document.getElementById(btn.dataset.closeModal);
@@ -2312,7 +2285,6 @@
                     });
                 });
 
-                // Main scroll listener
                 window.addEventListener('scroll', () => {
                     let st = window.pageYOffset || document.documentElement.scrollTop;
                     if (st > lastScrollTop && st > headerContainer.offsetHeight){
@@ -2323,17 +2295,14 @@
                     lastScrollTop = st <= 0 ? 0 : st;
                 }, false);
 
-                // FAB listeners
                 fabMain.addEventListener('click', () => {
                     if (selectedViolations.size > 0) fabContainer.classList.toggle('active');
                 });
 
-                // Search listener
                 searchInput.addEventListener('input', (e) => {
                     window.requestAnimationFrame(() => renderViolations(e.target.value));
                 });
 
-                // Copy modal listeners
                 copyNamesBtn.addEventListener('click', () => showModal(copyModalOverlay));
                 document.getElementById('copy-short').addEventListener('click', () => {
                     const abbreviations = Array.from(selectedViolations).map(id => violationsData.find(v => v.id === id).abbreviation).filter(Boolean).join(', ');
@@ -2346,7 +2315,6 @@
                     hideModal(copyModalOverlay);
                 });
 
-                // Summary copy listeners
                 copyFineBtn.addEventListener('click', () => copyToClipboard(totalFineEl.textContent, 'Bírság a vágólapra másolva!'));
                 copyJailBtn.addEventListener('click', () => copyToClipboard(totalJailEl.textContent, 'Börtönidő a vágólapra másolva!'));
                 copySummaryBtn.addEventListener('click', () => {
@@ -2355,10 +2323,8 @@
                     copyToClipboard(summaryText, 'Összegzés a vágólapra másolva!');
                 });
                 
-                // Clear selection listener
                 clearSelectionBtn.addEventListener('click', clearSelection);
 
-                // Favorites listeners
                 saveFavoriteBtn.addEventListener('click', () => {
                     if (selectedViolations.size === 0) {
                         showNotification('Nincsenek kiválasztott tételek a mentéshez!', 'error');
@@ -2384,7 +2350,6 @@
                     showModal(favoritesModalOverlay);
                 });
 
-                // Notes listeners
                 viewNotesBtn.addEventListener('click', () => {
                     loadNotes();
                     showModal(notesModalOverlay);
@@ -2401,21 +2366,18 @@
                     }
                 });
 
-                // Codes listeners
                 viewCodesBtn.addEventListener('click', () => {
                     renderRadioCodes();
                     showModal(codesModalOverlay);
                 });
                 codesSearchInput.addEventListener('input', (e) => renderRadioCodes(e.target.value));
 
-                // Timers listeners
                 viewTimersBtn.addEventListener('click', () => {
                     updateTimersUI();
                     showModal(timersModalOverlay);
                 });
                 newTimerForm.addEventListener('submit', handleStartTimer);
 
-                // Settings Listeners
                 viewSettingsBtn.addEventListener('click', () => showModal(settingsModalOverlay));
                 themeSelector.addEventListener('change', e => applyTheme(e.target.value));
                 exportDataBtn.addEventListener('click', handleExport);
@@ -2423,15 +2385,12 @@
                 importFileInput.addEventListener('change', handleImportFile);
                 deleteDataBtn.addEventListener('click', handleDeleteData);
 
-                // Cookie banner listener
                 const acceptBtn = document.getElementById('accept-cookies');
                 if(acceptBtn) acceptBtn.addEventListener('click', handleAcceptCookies);
 
-                // Release notes listeners
                 releaseNotesCloseBtn.addEventListener('click', closeReleaseNotes);
                 releaseNotesOkBtn.addEventListener('click', closeReleaseNotes);
 
-                // Initial page load
                 const savedTheme = getStorage('theme') || 'dark';
                 applyTheme(savedTheme);
                 handleCookieConsent();
